@@ -228,7 +228,29 @@ function load(){
   }catch(e){}
 }
 let avisoPersist=false;
-function persist(){try{localStorage.setItem('presupuestos',JSON.stringify(DB));return true;}catch(e){if(!avisoPersist){avisoPersist=true;toast('⚠ No se pudo guardar en el navegador. Descarga un respaldo JSON');}return false;}}
+
+/* === Resumen para ERP Principal === */
+function publicaResumen(){
+  try{
+    const fm=n=>'$'+(n||0).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
+    const arch=decodeURIComponent((location.pathname||'').split('/').pop()||'Presupuestos.html');
+    const M=(id,etiqueta,valor,detalle,serie)=>({id,etiqueta,valor,detalle,serie});
+    const fl=flujoAnual(),k=(DB.anio===new Date().getFullYear())?new Date().getMonth():11,f0=fl[k],mes=MESES[k];
+    const sum=(a,p)=>a.reduce((s,x)=>s+x[p],0),sl=p=>fl.slice(0,k+1).map(x=>x[p]);
+    const ms=[
+      M('saldo','Saldo · '+mes+' '+DB.anio,fm(f0.saldo),'Ingresos '+fm(f0.ing)+' · Gastos '+fm(f0.gas),sl('saldo')),
+      M('ing_mes','Ingresos · '+mes,fm(f0.ing),'Año: '+fm(sum(fl,'ing')),sl('ing')),
+      M('gas_mes','Gastos · '+mes,fm(f0.gas),'Año: '+fm(sum(fl,'gas')),sl('gas')),
+      M('util_mes','Utilidad · '+mes,fm(f0.ing-f0.gas),'Año: '+fm(sum(fl,'ing')-sum(fl,'gas')),fl.slice(0,k+1).map(x=>x.ing-x.gas)),
+      M('cobrar','Por cobrar (año)',fm(sum(fl,'porCobrar')),'Este mes: '+fm(f0.porCobrar),sl('porCobrar')),
+      M('saldo_dic','Saldo proyectado (dic)',fm(fl[11].saldo),'Utilidad del año '+fm(sum(fl,'ing')-sum(fl,'gas')),fl.map(x=>x.saldo))
+    ];
+    const all=JSON.parse(localStorage.getItem('erp_resumen')||'{}');
+    all[arch]=Object.assign({},ms[0],{metricas:ms});
+    localStorage.setItem('erp_resumen',JSON.stringify(all));
+  }catch(e){}
+}
+function persist(){try{localStorage.setItem('presupuestos',JSON.stringify(DB));publicaResumen();return true;}catch(e){if(!avisoPersist){avisoPersist=true;toast('⚠ No se pudo guardar en el navegador. Descarga un respaldo JSON');}return false;}}
 function save(){persist();render();}
 let toastT;
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2600);}
@@ -527,6 +549,7 @@ dz.ondragleave=()=>dz.classList.remove('hi');
 dz.ondrop=e=>{e.preventDefault();dz.classList.remove('hi');handleFiles([...e.dataTransfer.files]);};
 aplicarTema(document.documentElement.dataset.theme||'light');
 load();
+publicaResumen();
 render();
 </script>
 <!-- ERP: botón para regresar al ERP Principal (agregado; no modifica el resto de la aplicación) -->

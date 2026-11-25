@@ -1754,8 +1754,30 @@ function load(){
   if(r)DB.miRFC=r;                 // clave propia del RFC (la más confiable)
   else if(DB.miRFC)guardarRFC(DB.miRFC); // migra RFC guardado antes dentro de DB
   try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();}catch(e){}
+  publicaResumen();
 }
-function persist(){try{localStorage.setItem('contab2027',JSON.stringify(DB));}catch(e){avisoGuardado('⚠ No se pudo guardar: almacenamiento lleno o bloqueado. Descarga tu respaldo JSON.');}}
+
+/* === Resumen para ERP Principal === */
+function publicaResumen(){
+  try{
+    const fm=n=>'$'+(n||0).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
+    const arch=decodeURIComponent((location.pathname||'').split('/').pop()||'Contabilidad.html');
+    const M=(id,etiqueta,valor,detalle,serie)=>({id,etiqueta,valor,detalle,serie});
+    const isr=calcISR(),iva=calcIVA(),k=new Date().getMonth(),mes=MESES[k];
+    const ms=[
+      M('iva_pagar','IVA a pagar · '+mes,fm(iva[k].ivaPagar),'Cobrado '+fm(iva[k].cobrado)+' · Acreditable '+fm(iva[k].acreditable),iva.slice(0,k+1).map(r=>r.ivaPagar)),
+      M('isr_pagar','ISR a pagar · '+mes,fm(isr[k].aPagar),'Causado '+fm(isr[k].causado)+' · Retenciones '+fm(isr[k].retAc),isr.slice(0,k+1).map(r=>r.aPagar)),
+      M('iva_favor','Saldo de IVA a favor',fm(iva[k].sdoPorAcreditar),'Por acreditar en meses siguientes',iva.slice(0,k+1).map(r=>r.sdoPorAcreditar)),
+      M('ingresos','Ingresos · '+mes,fm(isr[k].ing),'Acumulado '+fm(isr[k].ingAc),isr.slice(0,k+1).map(r=>r.ing)),
+      M('egresos','Egresos deducibles · '+mes,fm(isr[k].ded),'Acumulado '+fm(isr[k].dedAc),isr.slice(0,k+1).map(r=>r.ded)),
+      M('utilidad','Utilidad acumulada',fm(isr[k].ingAc-isr[k].dedAc),'Ingresos menos deducciones del año',isr.slice(0,k+1).map(r=>r.ingAc-r.dedAc))
+    ];
+    const all=JSON.parse(localStorage.getItem('erp_resumen')||'{}');
+    all[arch]=Object.assign({},ms[0],{metricas:ms});
+    localStorage.setItem('erp_resumen',JSON.stringify(all));
+  }catch(e){}
+}
+function persist(){try{localStorage.setItem('contab2027',JSON.stringify(DB));publicaResumen();}catch(e){avisoGuardado('⚠ No se pudo guardar: almacenamiento lleno o bloqueado. Descarga tu respaldo JSON.');}}
 function save(){
   const np=+document.getElementById('perdidas').value||0,ns=+document.getElementById('sdoAnt').value||0;
   if(np!==(DB.perdidas||0)||ns!==(DB.sdoAnt||0))pushHistoria();

@@ -3501,9 +3501,39 @@
     }
   }
 
-  function actualizarContadorHistorial() {
+  
+/* === Resumen para ERP Principal === */
+function publicaResumen(){
+  try{
+    const fm=n=>'$'+(n||0).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
+    const arch=decodeURIComponent((location.pathname||'').split('/').pop()||'Multicotizador.html');
+    const M=(id,etiqueta,valor,detalle,serie)=>({id,etiqueta,valor,detalle,serie});
+    const hist=obtenerHistorialGuardado(),hoy=new Date(),y=hoy.getFullYear(),mo=hoy.getMonth();
+    const num=t=>{const v=parseFloat(String(t||'').replace(/[^0-9.\-]/g,''));return isFinite(v)?v:0;};
+    const meses=[];for(let k=5;k>=0;k--){const d=new Date(y,mo-k,1);meses.push({y:d.getFullYear(),m:d.getMonth(),t:0,n:0,u:0});}
+    let totAll=0,usdAll=0;
+    hist.forEach(it=>{const mx=it.moneda==='USD';if(mx)usdAll+=num(it.totalTexto);else totAll+=num(it.totalTexto);
+      const d=new Date(it.actualizado);if(isNaN(d))return;
+      const b=meses.find(x=>x.y===d.getFullYear()&&x.m===d.getMonth());if(!b)return;
+      b.n++;if(mx)b.u+=num(it.totalTexto);else b.t+=num(it.totalTexto);});
+    const cur=meses[5];
+    const ult=hist.slice().sort((a,b)=>String(b.actualizado||'').localeCompare(String(a.actualizado||'')))[0];
+    const ms=[
+      M('total_mes','Cotizado este mes (MXN)',fm(cur.t),cur.n+' cotización(es) este mes'+(cur.u?' · USD '+fm(cur.u):''),meses.map(x=>x.t)),
+      M('num_mes','Cotizaciones este mes',String(cur.n),'En historial: '+hist.length,meses.map(x=>x.n)),
+      M('total_hist','Total en historial (MXN)',fm(totAll),hist.length+' cotizaciones'+(usdAll?' · USD '+fm(usdAll):''),meses.map(x=>x.t)),
+      M('usd_mes','Cotizado este mes (USD)',fm(cur.u),'Cotizaciones en dólares',meses.map(x=>x.u)),
+      M('ultima','Última cotización',ult?String(ult.totalTexto||'$0.00'):'—',ult?('Folio '+(ult.folio||'-')+' · '+(ult.proyecto||ult.atencion||'sin proyecto')):'Aún no hay cotizaciones',meses.map(x=>x.n))
+    ];
+    const all=JSON.parse(localStorage.getItem('erp_resumen')||'{}');
+    all[arch]=Object.assign({},ms[0],{metricas:ms});
+    localStorage.setItem('erp_resumen',JSON.stringify(all));
+  }catch(e){}
+}
+function actualizarContadorHistorial() {
     const hist = obtenerHistorialGuardado();
     document.getElementById("contadorHistorial").textContent = hist.length;
+    publicaResumen();
   }
 
   function guardarCotizacionEnHistorial() {

@@ -5,49 +5,84 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ERP Principal</title>
 <style>
+:root{--bg:#eef2f7;--bg2:#e3e9f2;--tx:#1b2430;--mut:#5b6673;--card:#ffffff;--card2:#f3f6fb;--bd:#d5dde8;--ac:#0d6efd;--ac2:#6610f2;--sec:#e8eef9;--secx:#1a2f5a;--ok:#146c43;--er:#b02a37;--sh1:rgba(30,50,90,.18);--sh2:rgba(255,255,255,.9)}
+[data-tema=oscuro]{--bg:#0f1420;--bg2:#161d2e;--tx:#e6ebf5;--mut:#9aa6ba;--card:#1b2336;--card2:#222c44;--bd:#2c3752;--ac:#4c8dff;--ac2:#8b5cf6;--sec:#2a3552;--secx:#dbe6ff;--ok:#4ade80;--er:#ff7b88;--sh1:rgba(0,0,0,.6);--sh2:rgba(90,110,160,.12)}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',Arial,sans-serif;background:#f4f6f8;color:#1b2430;font-size:14px}
-header{background:linear-gradient(135deg,#1a2f5a,#0d6efd);color:#fff;padding:18px 24px;display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center}
-header h1{font-size:21px}
-header .sub{font-size:12px;opacity:.9;margin-top:4px;max-width:720px}
-main{max-width:1100px;margin:0 auto;padding:22px 24px 60px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px;margin:14px 0}
-.card{background:#fff;border:1px solid #dde3e8;border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:8px}
-.card h2{font-size:16px}
-.card p{font-size:12px;color:#5b6673;word-break:break-all}
-.chk{display:flex;gap:6px;align-items:center;font-size:12px;color:#334155;font-weight:600;margin:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:radial-gradient(circle at 15% 0%,var(--bg2),var(--bg) 60%) fixed;color:var(--tx);font-size:14px;min-height:100vh;transition:background .3s,color .3s}
+header{background:linear-gradient(135deg,#1a2f5a,#0d6efd 60%,#6610f2);color:#fff;padding:22px 24px;display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;box-shadow:0 8px 24px var(--sh1)}
+header h1{font-size:24px;letter-spacing:.3px}
+header .sub{font-size:12px;opacity:.92;margin-top:4px;max-width:720px}
+.hbtns{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+main{max-width:1150px;margin:0 auto;padding:22px 24px 60px}
+.saludo{font-size:18px;font-weight:600;margin:4px 0 2px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:22px;margin:16px 0}
+.card{background:linear-gradient(160deg,var(--card),var(--card2));border:1px solid var(--bd);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden;
+box-shadow:0 1px 0 var(--sh2) inset,0 2px 0 var(--bd),0 5px 0 var(--bd),0 14px 24px var(--sh1);transition:transform .18s,box-shadow .18s}
+.card::before{content:'';position:absolute;left:0;top:0;right:0;height:5px;background:linear-gradient(90deg,var(--ac),var(--ac2))}
+.card:hover{transform:translateY(-5px);box-shadow:0 1px 0 var(--sh2) inset,0 2px 0 var(--bd),0 8px 0 var(--bd),0 22px 34px var(--sh1)}
+.card h2{font-size:16px;display:flex;gap:8px;align-items:center}
+.ico{font-size:22px}
+.card p{font-size:11px;color:var(--mut);word-break:break-all}
+.prev{background:var(--bg);border:1px solid var(--bd);border-radius:12px;padding:10px 12px;box-shadow:inset 0 3px 8px var(--sh1);min-height:96px}
+.prev .et{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.6px}
+.prev .num{font-size:28px;font-weight:700;background:linear-gradient(90deg,var(--ac),var(--ac2));-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1.2}
+.prev .sub2{font-size:11px;color:var(--mut)}
+.prev svg{width:100%;height:38px;display:block;margin-top:4px}
+.prev.vacio .num{font-size:15px;color:var(--mut);background:none;-webkit-text-fill-color:initial}
+.chk{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--mut);font-weight:600}
 .chk input{width:auto}
 .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
-button{border:0;border-radius:6px;padding:8px 14px;cursor:pointer;font-size:13px;font-weight:600;background:#0d6efd;color:#fff}
-button.sec{background:#e8eef9;color:#1a2f5a}
-header button.sec{background:#fff;color:#1a2f5a}
-button.del{background:#fee;color:#b02a37;border:1px solid #dc3545}
-button:focus-visible,input:focus-visible{outline:3px solid #ffc107}
-label{display:block;font-size:12px;color:#5b6673;font-weight:600;margin-bottom:3px}
-input[type=text]{width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px}
-.mut{color:#5b6673;font-size:12px}
+button{border:0;border-radius:10px;padding:9px 15px;cursor:pointer;font-size:13px;font-weight:600;background:linear-gradient(180deg,var(--ac),#0a58ca);color:#fff;box-shadow:0 4px 0 #084298,0 8px 14px var(--sh1);transition:transform .1s,box-shadow .1s}
+button:hover{filter:brightness(1.08)}
+button:active{transform:translateY(3px);box-shadow:0 1px 0 #084298}
+button.sec{background:var(--sec);color:var(--secx);box-shadow:0 4px 0 var(--bd),0 8px 14px var(--sh1)}
+button.sec:active{box-shadow:0 1px 0 var(--bd)}
+header button.sec{background:#fff;color:#1a2f5a;box-shadow:0 4px 0 rgba(0,0,0,.25)}
+button.del{background:transparent;color:var(--er);border:1px solid var(--er);box-shadow:none}
+select.vista{width:100%;margin-top:8px;padding:7px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font-size:13px}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #ffc107}
+label{display:block;font-size:12px;color:var(--mut);font-weight:600;margin-bottom:3px}
+input[type=text]{width:100%;padding:9px;border:1px solid var(--bd);border-radius:8px;font-size:13px;background:var(--bg);color:var(--tx)}
+.mut{color:var(--mut);font-size:12px}
 .msg{margin:10px 0;font-size:13px;min-height:18px}
-dialog{border:1px solid #cbd5e1;border-radius:12px;padding:20px;width:min(560px,92vw);box-shadow:0 12px 40px rgba(0,0,0,.3)}
-dialog::backdrop{background:rgba(15,23,42,.55)}
+dialog{border:1px solid var(--bd);border-radius:16px;padding:22px;width:min(560px,92vw);box-shadow:0 20px 50px rgba(0,0,0,.4);background:var(--card);color:var(--tx)}
+dialog::backdrop{background:rgba(15,23,42,.6)}
 dialog h3{font-size:16px;margin-bottom:12px}
 .f{margin-bottom:12px}
 .pathrow{display:flex;gap:8px}
-.err{color:#b02a37;font-size:13px;min-height:18px;margin-bottom:8px}
+.err{color:var(--er);font-size:13px;min-height:18px;margin-bottom:8px}
+details{margin-top:18px;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px}
+summary{cursor:pointer;font-weight:600}
+pre{background:var(--bg);padding:10px;border-radius:8px;overflow:auto;font-size:12px;margin-top:8px;color:var(--tx)}
 </style>
+<script>(function(){var t=null;try{t=localStorage.getItem('erp_tema')}catch(e){}if(!t)t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'oscuro':'claro';document.documentElement.setAttribute('data-tema',t);})();</script>
 </head>
 <body>
 <header>
   <div>
-    <h1>ERP Principal</h1>
+    <h1>🚀 ERP Principal</h1>
     <div class="sub">Abre tus aplicaciones. Dentro de cada una, el botón "Regresar al ERP" (esquina inferior izquierda) te trae de vuelta.</div>
   </div>
-  <button type="button" class="sec" id="btn-new">+ Agregar aplicación</button>
+  <div class="hbtns">
+    <button type="button" class="sec" id="btn-tema" aria-label="Cambiar entre modo claro y oscuro">🌙 Modo oscuro</button>
+    <button type="button" class="sec" id="btn-new">+ Agregar aplicación</button>
+  </div>
 </header>
 <main>
+  <div class="saludo" id="saludo"></div>
   <div class="msg" id="msg" role="status"></div>
   <section class="grid" id="grid"></section>
   <div class="row"><button type="button" class="sec" id="btn-reset">Restaurar lista original</button></div>
   <p class="mut" style="margin-top:14px">Cada aplicación guarda sus datos por separado en este navegador. Haz respaldos con el botón "Respaldo JSON" de cada una. Esta página solo guarda la lista de nombres y rutas.</p>
+  <details>
+    <summary>📊 ¿Cómo activar la previsualización en cada recuadro?</summary>
+    <p class="mut" style="margin-top:8px">Cada aplicación debe publicar un resumen. Agrega esta línea en la app (se me puede pedir que la inserte) cada vez que guarde datos. La clave es el nombre exacto del archivo:</p>
+    <pre>localStorage.setItem('erp_resumen', JSON.stringify(Object.assign(
+  JSON.parse(localStorage.getItem('erp_resumen')||'{}'),
+  {'ERP.html':{etiqueta:'Gastos del mes',valor:'$12,450',detalle:'3 cotizaciones abiertas',serie:[8,12,9,15,11,18]}}
+)));</pre>
+    <p class="mut" style="margin-top:8px">Nota: en Chrome/Edge los archivos locales comparten almacenamiento y funciona directo; en Firefox puede no compartirse entre archivos.</p>
+  </details>
 </main>
 
 <dialog id="dlg" aria-labelledby="dlg-title">
@@ -103,10 +138,10 @@ function reemplazaNombre(ruta,nuevo){
   'use strict';
   var KEY='erp_principal_modulos';
   var ORIGINALES=[
-    {nombre:'Administración ERP (cotizaciones, gastos, almacén)',ruta:'ERP.html',preguntar:true},
-    {nombre:'Multicotizador',ruta:'Multicotizador_v15.html',preguntar:true},
-    {nombre:'Contabilidad (ISR / IVA / CFDI)',ruta:'sistema_de_contabilidad_P8.html',preguntar:true},
-    {nombre:'Presupuestos',ruta:'sistema-de-presupuestos-dona-saldo-del-mes_v4.html',preguntar:true}
+    {nombre:'Administración ERP (cotizaciones, gastos, almacén)',ruta:'ERP_Sub.html',preguntar:true},
+    {nombre:'Multicotizador',ruta:'Multicotizador.html',preguntar:true},
+    {nombre:'Contabilidad (ISR / IVA / CFDI)',ruta:'Contabilidad.html',preguntar:true},
+    {nombre:'Presupuestos',ruta:'Presupuestos.html',preguntar:true}
   ];
   var lista=cargar(), contexto=null;
   var $=function(id){return document.getElementById(id);};
@@ -130,8 +165,77 @@ function reemplazaNombre(ruta,nuevo){
     return copia(ORIGINALES);
   }
   function guardar(){try{localStorage.setItem(KEY,JSON.stringify(lista));}catch(e){msg('No se pudo guardar la lista en este navegador',true);}}
-  function msg(t,err){var m=$('msg');m.textContent=t||'';m.style.color=err?'#b02a37':'#146c43';}
+  function msg(t,err){var m=$('msg');m.textContent=t||'';m.style.color=err?'var(--er)':'var(--ok)';}
 
+  /* Tema claro/oscuro */
+  function aplicaTema(t){
+    document.documentElement.setAttribute('data-tema',t);
+    $('btn-tema').textContent=t==='oscuro'?'☀️ Modo claro':'🌙 Modo oscuro';
+    try{localStorage.setItem('erp_tema',t);}catch(e){}
+  }
+  $('btn-tema').addEventListener('click',function(){
+    aplicaTema(document.documentElement.getAttribute('data-tema')==='oscuro'?'claro':'oscuro');
+  });
+  aplicaTema(document.documentElement.getAttribute('data-tema'));
+
+  function saludo(){
+    var h=new Date().getHours();
+    var s=h<12?'Buenos días':h<19?'Buenas tardes':'Buenas noches';
+    $('saludo').textContent=s+', Adrián 👋 ¿Qué vamos a avanzar hoy?';
+  }
+
+  function icono(n){
+    n=n.toLowerCase();
+    if(/contab|isr|iva|cfdi/.test(n))return '🧾';
+    if(/presup/.test(n))return '💰';
+    if(/multicot/.test(n))return '📋';
+    if(/erp|admin|almac/.test(n))return '🏭';
+    if(/cotiz/.test(n))return '📋';
+    return '📁';
+  }
+
+  /* Previsualización */
+  function resumenes(){try{return JSON.parse(localStorage.getItem('erp_resumen'))||{};}catch(e){return {};}}
+  function sparkline(serie){
+    var NS='http://www.w3.org/2000/svg';
+    var svg=document.createElementNS(NS,'svg');svg.setAttribute('viewBox','0 0 100 30');svg.setAttribute('preserveAspectRatio','none');
+    var v=serie.map(Number).filter(function(x){return isFinite(x);});
+    if(v.length<2)return null;
+    var mn=Math.min.apply(null,v),mx=Math.max.apply(null,v),rg=(mx-mn)||1;
+    var pts=v.map(function(y,i){return (i*100/(v.length-1)).toFixed(1)+','+(27-((y-mn)/rg)*24).toFixed(1);});
+    var area=document.createElementNS(NS,'polygon');area.setAttribute('points','0,30 '+pts.join(' ')+' 100,30');
+    area.setAttribute('fill','var(--ac)');area.setAttribute('opacity','.18');
+    var ln=document.createElementNS(NS,'polyline');ln.setAttribute('points',pts.join(' '));
+    ln.setAttribute('fill','none');ln.setAttribute('stroke','var(--ac)');ln.setAttribute('stroke-width','2');ln.setAttribute('vector-effect','non-scaling-stroke');ln.setAttribute('stroke-linejoin','round');
+    svg.appendChild(area);svg.appendChild(ln);return svg;
+  }
+  var AL={'erp.html':'ERP_Sub.html','multicotizador_v15.html':'Multicotizador.html','sistema_de_contabilidad_p8.html':'Contabilidad.html','sistema-de-presupuestos-dona-saldo-del-mes_v4.html':'Presupuestos.html'};
+  var abiertos={};
+  function claveRes(m){
+    var R=resumenes(),fn=nombreDeRuta(m.ruta);try{fn=decodeURIComponent(fn);}catch(e){}
+    if(R[fn])return fn;
+    if(AL[fn.toLowerCase()]&&R[AL[fn.toLowerCase()]])return AL[fn.toLowerCase()];
+    var k=Object.keys(R).filter(function(x){return x.toLowerCase()===fn.toLowerCase();})[0];
+    return k||fn;
+  }
+  function getSel(){try{return JSON.parse(localStorage.getItem('erp_metrica_sel'))||{};}catch(e){return {};}}
+  function setSel(k,id){var s=getSel();s[k]=id;try{localStorage.setItem('erp_metrica_sel',JSON.stringify(s));}catch(e){}}
+  function preview(m,i){
+    var k=claveRes(m),e=resumenes()[k],d=e,lista=(e&&Array.isArray(e.metricas))?e.metricas:[];
+    if(lista.length){var sel=getSel()[k];d=lista.filter(function(x){return x.id===sel;})[0]||lista[0];}
+    var p=el('div','prev');
+    if(!d||d.valor==null){p.className='prev vacio';p.appendChild(el('div','et','Resumen'));p.appendChild(el('div','num','Sin datos aún'));p.appendChild(el('div','sub2','Abre la app y guarda algo para ver aquí su resumen'));return p;}
+    p.appendChild(el('div','et',String(d.etiqueta||'Resumen')));p.appendChild(el('div','num',String(d.valor)));
+    if(d.detalle)p.appendChild(el('div','sub2',String(d.detalle)));
+    if(Array.isArray(d.serie)){var s=sparkline(d.serie);if(s)p.appendChild(s);}
+    if(abiertos[i]&&lista.length){
+      var sl=document.createElement('select');sl.className='vista';sl.setAttribute('aria-label','Elegir qué dato mostrar');
+      lista.forEach(function(x){var o=document.createElement('option');o.value=x.id;o.textContent=String(x.etiqueta).split(' · ')[0];if(x.id===d.id)o.selected=true;sl.appendChild(o);});
+      sl.addEventListener('change',function(){setSel(k,sl.value);render();});
+      p.appendChild(sl);
+    }
+    return p;
+  }
   function irA(m){
     var r=normalizaRuta(m.ruta);
     if(!r.ok){msg(r.error,true);return;}
@@ -185,7 +289,9 @@ function reemplazaNombre(ruta,nuevo){
     if(!lista.length)g.appendChild(el('p','mut','No hay aplicaciones. Agrega una o restaura la lista original.'));
     lista.forEach(function(m,i){
       var c=el('article','card');
-      c.appendChild(el('h2',null,m.nombre));
+      var h=el('h2');h.appendChild(el('span','ico',icono(m.nombre)));h.appendChild(el('span',null,m.nombre));
+      c.appendChild(h);
+      c.appendChild(preview(m,i));
       c.appendChild(el('p',null,m.ruta));
       var lb=el('label','chk'),cb=document.createElement('input');cb.type='checkbox';cb.checked=m.preguntar;
       cb.addEventListener('change',function(){m.preguntar=cb.checked;guardar();});
@@ -199,7 +305,8 @@ function reemplazaNombre(ruta,nuevo){
         if(!confirm('¿Quitar "'+m.nombre+'" de la lista? El archivo no se borra.'))return;
         lista.splice(i,1);guardar();render();msg('Se quitó el botón.');
       });
-      r.appendChild(b);r.appendChild(e);r.appendChild(q);c.appendChild(r);g.appendChild(c);
+      var v=el('button','sec','📊 Vista');v.type='button';v.title='Elegir qué dato ver en este recuadro';v.addEventListener('click',function(){abiertos[i]=!abiertos[i];render();});
+      r.appendChild(b);r.appendChild(v);r.appendChild(e);r.appendChild(q);c.appendChild(r);g.appendChild(c);
     });
   }
   $('btn-new').addEventListener('click',function(){dialogo('nuevo');});
@@ -207,7 +314,9 @@ function reemplazaNombre(ruta,nuevo){
     if(!confirm('¿Restaurar la lista original? Se perderán los nombres y rutas que cambiaste.'))return;
     lista=copia(ORIGINALES);guardar();render();msg('Lista original restaurada');
   });
-  render();
+  window.addEventListener('storage',function(e){if(e.key==='erp_resumen')render();});
+  window.addEventListener('focus',render);
+  saludo();render();
 })();
 </script>
 </body>

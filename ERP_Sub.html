@@ -1053,7 +1053,38 @@
     }
 
     // ACTUALIZAR KPIs EN FILA ÚNICA
+
+/* === Resumen para ERP Principal === */
+function publicaResumen(){
+  try{
+    const fm=n=>'$'+(n||0).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
+    const arch=decodeURIComponent((location.pathname||'').split('/').pop()||'ERP_Sub.html');
+    const M=(id,etiqueta,valor,detalle,serie)=>({id,etiqueta,valor,detalle,serie});
+    const hoy=new Date(),y=hoy.getFullYear(),mo=hoy.getMonth();
+    const meses=[];for(let k=5;k>=0;k--){const d=new Date(y,mo-k,1);meses.push({y:d.getFullYear(),m:d.getMonth(),g:0});}
+    estado.gastos.forEach(g=>{const d=new Date(String(g.fecha||'')+'T00:00:00');if(isNaN(d))return;
+      const b=meses.find(x=>x.y===d.getFullYear()&&x.m===d.getMonth());if(b)b.g+=Number(g.bruto)||0;});
+    const cot=estado.cotizaciones.reduce((a,c)=>a+Number(c.cant)*Number(c.pu),0);
+    const cos=estado.cotizaciones.reduce((a,c)=>a+Number(c.cant)*Number(c.ek),0);
+    const gas=estado.gastos.reduce((a,g)=>a+Number(g.bruto),0);
+    const iv=estado.gastos.reduce((a,g)=>a+Number(g.iva),0);
+    const mg=estado.cotizaciones.length?estado.cotizaciones.reduce((a,c)=>a+Number(c.margen),0)/estado.cotizaciones.length:0;
+    const ms=[
+      M('utilidad','Utilidad (cotizado - costo - gastos)',fm(cot-cos-gas),'Cotizado '+fm(cot)+' · Gastos '+fm(gas),meses.map(x=>x.g)),
+      M('cotizado','Total cotizado',fm(cot),estado.cotizaciones.length+' posiciones de cotización',meses.map(x=>x.g)),
+      M('gastos','Gastos totales',fm(gas),'IVA de gastos '+fm(iv),meses.map(x=>x.g)),
+      M('gasto_mes','Gastos del mes',fm(meses[5].g),'Últimos 6 meses en la gráfica',meses.map(x=>x.g)),
+      M('iva','IVA de gastos',fm(iv),'Sobre '+fm(gas)+' de gasto',meses.map(x=>x.g)),
+      M('margen','Margen promedio',mg.toFixed(1)+'%','Promedio de las cotizaciones',meses.map(x=>x.g)),
+      M('almacen','Artículos en almacén',String(estado.almacen.length),estado.clientes.length+' clientes · '+estado.proveedores.length+' proveedores',meses.map(x=>x.g))
+    ];
+    const all=JSON.parse(localStorage.getItem('erp_resumen')||'{}');
+    all[arch]=Object.assign({},ms[0],{metricas:ms});
+    localStorage.setItem('erp_resumen',JSON.stringify(all));
+  }catch(e){}
+}
     function actualizarKPIs() {
+      publicaResumen();
       const totalCotizado = estado.cotizaciones.reduce((acc, c) => acc + (Number(c.cant) * Number(c.pu)), 0);
       const totalCostoCotiz = estado.cotizaciones.reduce((acc, c) => acc + (Number(c.cant) * Number(c.ek)), 0);
       const totalGastos = estado.gastos.reduce((acc, g) => acc + Number(g.bruto), 0);
