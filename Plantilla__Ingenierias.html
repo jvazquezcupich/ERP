@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Propuesta de Ingeniería HVAC - NSR Ejecutiva</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f9;
+            --doc-bg: #ffffff;
+            --text-color: #2c3e50;
+            --border-color: #dcdde1;
+            --primary-color: #0056b3;
+            --hover-color: #004494;
+            --editable-bg: rgba(0, 86, 179, 0.04);
+            --footer-color: #7f8fa6;
+            --brand-color: #0056b3;
+        }
+
+        body.dark-mode {
+            --bg-color: #1e272e;
+            --doc-bg: #2f3640;
+            --text-color: #f5f6fa;
+            --border-color: #718093;
+            --primary-color: #4da3ff;
+            --hover-color: #7abaff;
+            --editable-bg: rgba(77, 163, 255, 0.08);
+            --footer-color: #dcdde1;
+            --brand-color: #4da3ff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Toolbar Styles */
+        .toolbar {
+            position: sticky;
+            top: 0;
+            background-color: var(--doc-bg);
+            padding: 12px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            z-index: 1000;
+        }
+
+        .toolbar button {
+            background-color: var(--primary-color);
+            color: #ffffff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .toolbar button:hover {
+            background-color: var(--hover-color);
+            transform: translateY(-1px);
+        }
+
+        .btn-danger { background-color: #e84118 !important; }
+        .btn-danger:hover { background-color: #c23616 !important; }
+        
+        .toggle-dots-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: var(--bg-color);
+            padding: 7px 14px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* Document Styles */
+        .document-wrapper {
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .document {
+            background-color: var(--doc-bg);
+            width: 100%;
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 60px 70px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+            font-size: 14px;
+            line-height: 1.7;
+            border-radius: 4px;
+            position: relative;
+            min-height: 1000px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .content-body { flex: 1; }
+
+        /* Editable Elements */
+        [contenteditable="true"] {
+            outline: none;
+            border-bottom: 1px dashed var(--border-color);
+            min-width: 20px;
+            display: inline-block;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+
+        [contenteditable="true"]:focus, [contenteditable="true"]:hover {
+            background-color: var(--editable-bg);
+            border-bottom: 1px dashed var(--primary-color);
+        }
+        
+        /* Ocultar Puntos (Dashed lines) class */
+        body.no-dots [contenteditable="true"] { border-bottom-color: transparent !important; }
+        body.no-dots [contenteditable="true"]:focus, body.no-dots [contenteditable="true"]:hover { background-color: transparent !important; }
+        body.no-dots .logo-container, body.no-dots .sig-container { border-color: transparent !important; }
+        body.no-dots .sig-container:hover, body.no-dots .logo-container:hover { background-color: transparent !important; }
+
+        .editable-block {
+            display: block;
+            width: 100%;
+            min-height: 1.5em;
+        }
+
+        /* Header Section */
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 40px;
+            padding-bottom: 10px;
+        }
+
+        .logo-group {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .logo-container {
+            cursor: pointer;
+            border: 1px dashed var(--border-color);
+            padding: 8px;
+            transition: all 0.3s;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .logo-container:hover {
+            background-color: var(--editable-bg);
+            border-color: var(--primary-color);
+        }
+
+        .logo-container img {
+            max-width: 220px;
+            max-height: 90px;
+            object-fit: contain;
+        }
+        
+        /* Controles de Marca */
+        .brand-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-top: 5px;
+            background: var(--bg-color);
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .brand-controls input[type="color"] {
+            border: none;
+            width: 24px;
+            height: 24px;
+            padding: 0;
+            cursor: pointer;
+            background: transparent;
+        }
+        
+        .brand-controls button {
+            background: var(--doc-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 2px 6px;
+            font-size: 12px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .brand-controls { opacity: 0; transition: opacity .2s; }
+        .logo-group:hover .brand-controls, .brand-controls:focus-within { opacity: 1; }
+        .entregables-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+        h2 { break-after: avoid; }
+        .signature-section { break-inside: avoid; }
+        #f_empresaHeader { white-space: nowrap; display: block; }
+        .logo-group { flex: 1 1 auto; min-width: 0; }
+        .header-right { flex: 0 0 auto; margin-left: 20px; }
+        #f_lugarFecha { white-space: nowrap; }
+        .brand-controls button:hover {
+            background: var(--primary-color);
+            color: #fff;
+        }
+
+        .header-right {
+            text-align: right;
+            padding-top: 10px;
+        }
+
+        /* Typography */
+        h1, h2, h3 { color: var(--text-color); }
+
+        h2 {
+            font-size: 1.15em;
+            text-transform: uppercase;
+            margin-top: 30px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 6px;
+            letter-spacing: 0.5px;
+            color: var(--primary-color);
+        }
+
+        .text-center { text-align: center; }
+        .bold { font-weight: bold; }
+        
+        /* Client Info Box */
+        .client-info-box {
+            background-color: var(--editable-bg);
+            padding: 15px 20px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        /* Signatures */
+        .signature-section {
+            margin-top: 70px;
+            text-align: center;
+        }
+        
+        .sig-container {
+            display: inline-block;
+            cursor: pointer;
+            border: 1px dashed var(--border-color);
+            border-radius: 6px;
+            padding: 5px;
+            margin: 10px auto;
+            width: 220px;
+            height: 90px;
+            transition: all 0.3s;
+        }
+        .sig-container:hover {
+            background-color: var(--editable-bg);
+            border-color: var(--primary-color);
+        }
+        .sig-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .signature-section .editable-block { display: block; width: fit-content; margin-left: auto; margin-right: auto; text-align: center; }
+        .signature-section .sig-container { display: block; margin: 10px auto; }
+        #f_atn { min-width: 220px; }
+        .signature-line {
+            width: 280px;
+            border-top: 1px solid var(--text-color);
+            margin: 10px auto 10px auto;
+        }
+        
+        /* Footer / Membrete */
+        .document-footer {
+            margin-top: 60px;
+            padding-top: 25px;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.85em;
+            color: var(--footer-color);
+            width: 100%;
+            letter-spacing: 0.5px;
+        }
+
+        /* Print Styles */
+        @page {
+            margin: 0; 
+            size: letter;
+        }
+        @media print {
+            body { margin: 1.5cm; background-color: #ffffff; color: #000000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .toolbar, .brand-controls, .no-print { display: none !important; }
+            .document-wrapper { padding: 0; display: block; }
+            .document {
+                box-shadow: none;
+                margin: 0;
+                padding: 0;
+                max-width: 100%;
+                border-radius: 0;
+                min-height: auto;
+                display: block;
+            }
+            [contenteditable="true"] { border-bottom: none !important; }
+            [contenteditable="true"]:focus, [contenteditable="true"]:hover { background-color: transparent !important; }
+            .logo-container, .sig-container { border: none !important; background: transparent !important; padding: 0; }
+            .client-info-box { background-color: transparent; padding: 10px 15px; }
+            h2 { color: #0056b3 !important; border-bottom-color: #0056b3; }
+            
+            .document-footer { page-break-inside: avoid; border-top-color: #000; color: #333; }
+        }
+
+        .document { counter-reset: sec; }
+        h2:not(.sec-off) .sec-num { counter-increment: sec; }
+        h2:not(.sec-off) .sec-num::before { content: counter(sec) ". "; }
+        h2.sec-off .sec-num::before { content: "– "; }
+        .entregables-grid.solo { grid-template-columns: 1fr; }
+        .ent-toggle { display:block; font-size:12px; color:var(--footer-color); margin-bottom:4px; cursor:pointer; }
+        .ent-col.dim > div[contenteditable] { opacity:.3; text-decoration: line-through; }
+        .item-chk { margin: 0 6px 0 -2px; vertical-align: middle; cursor: pointer; }
+        h2 .sec-chk { margin: 0 8px 0 0; width: 15px; height: 15px; }
+        li.item-off { opacity:.35; text-decoration: line-through; }
+        .sec-off { opacity:.3; }
+        h2.sec-off { text-decoration: line-through; }
+        .date-btn { display:block; margin:4px 0 0 auto; background:var(--doc-bg); border:1px solid var(--border-color); color:var(--text-color); border-radius:5px; padding:2px 8px; font-size:12px; cursor:pointer; }
+        .date-btn:hover { background:var(--primary-color); color:#fff; }
+        .accept-grid .date-btn { margin:6px auto 0; }
+        .date-hidden { position:absolute; opacity:0; pointer-events:none; width:1px; height:1px; }
+        .title-row { display:flex; justify-content:space-between; align-items:baseline; gap:20px; margin-bottom:18px; }
+        .project-title { font-size:1.25em; font-weight:800; letter-spacing:1px; color:var(--primary-color); }
+        .folio { color:var(--footer-color); font-size:.9em; white-space:nowrap; }
+        .summary-card { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:0 0 26px; }
+        .summary-card .kpi { border:1px solid var(--border-color); border-radius:8px; padding:10px 12px; background:var(--editable-bg); }
+        .kpi [contenteditable] { display:block; }
+        .kpi small { display:block; text-transform:uppercase; font-size:.68em; letter-spacing:.8px; color:var(--footer-color); }
+        .kpi b { display:block; font-size:1.05em; color:var(--primary-color); }
+        .kpi span.sub { display:block; font-size:.78em; color:var(--footer-color); }
+        .phase-table { width:100%; border-collapse:collapse; font-size:.93em; margin:8px 0 14px; }
+        .phase-table th { background:var(--primary-color); color:#fff; text-align:left; padding:6px 10px; font-weight:600; }
+        .phase-table td { border-bottom:1px solid var(--border-color); padding:6px 10px; vertical-align:top; }
+        .accept-box { margin-top:40px; border:1px solid var(--border-color); border-radius:8px; padding:16px 20px; break-inside:avoid; }
+        .accept-box .accept-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:24px; margin-top:34px; text-align:center; }
+        .accept-line { border-top:1px solid var(--text-color); padding-top:4px; }
+        .modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:2000; align-items:center; justify-content:center; }
+        .modal-bg.open { display:flex; }
+        .modal-box { background:var(--doc-bg); color:var(--text-color); padding:24px 28px; border-radius:10px; max-width:420px; box-shadow:0 10px 30px rgba(0,0,0,.3); }
+        .modal-box button { margin:14px 8px 0 0; padding:8px 16px; border:none; border-radius:6px; cursor:pointer; font-weight:600; color:#fff; background:var(--primary-color); }
+        @media (max-width:700px){ .summary-card{grid-template-columns:1fr 1fr;} }
+        @media print {
+            .ent-col.off, li.item-off, .sec-off { display: none !important; }
+            .ent-col.dim > div[contenteditable] { opacity:1; text-decoration:none; }
+            .summary-card .kpi { background: transparent; }
+            .phase-table th { background:#0056b3 !important; color:#fff !important; }
+            .modal-bg, .date-btn, .date-hidden { display:none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Toolbar (No Print) -->
+    <div class="toolbar">
+        <button onclick="toggleTheme()">🌓 Modo Oscuro</button>
+        <button onclick="changeFontSize(1)">A+ Texto</button>
+        <button onclick="changeFontSize(-1)">A- Texto</button>
+        
+        <label class="toggle-dots-container" title="Oculta las líneas punteadas de los textos editables">
+            <input type="checkbox" id="chkDots" onchange="document.body.classList.toggle('no-dots', this.checked)">
+            Ocultar Guías
+        </label>
+
+        <button onclick="exportJSON()">💾 Guardar Archivo</button>
+        <button onclick="document.getElementById('importFile').click()">📂 Cargar Archivo</button>
+        <input type="file" id="importFile" style="display:none" onchange="importJSON(event)" accept=".json">
+        <button onclick="window.print()">🖨️ Imprimir / PDF</button>
+        <button onclick="clearDocument()" class="btn-danger">🗑️ Limpiar</button>
+    </div>
+
+    <!-- Document Wrapper -->
+    <div class="document-wrapper">
+        <div class="document" id="docContainer">
+            
+            <div class="content-body">
+                <!-- Header -->
+                <div class="header-section">
+                    <div class="logo-group">
+                        <div class="logo-container" onclick="document.getElementById('logoInput').click()" title="Haz clic para cambiar el logo">
+                            <img id="companyLogo" src='data:image/svg+xml;utf8,<svg width="250" height="80" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="%23e0e0e0"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%23666">Clic para insertar Logo</text></svg>' alt="Logo" />
+                            <input type="file" id="logoInput" style="display:none" accept="image/*" onchange="changeImage(event, 'companyLogo')">
+                        </div>
+                        
+                        <!-- Nombre de Empresa Editable bajo el Logo -->
+                        <div contenteditable="true" id="f_empresaHeader" style="color: var(--brand-color); font-size: 18px; font-weight: 800; font-family: 'Segoe UI', Arial, sans-serif; letter-spacing: 1px; margin-top: 5px;">GRUPO NSR HVAC Y CONTROL S. A. DE C. V.</div>
+                        
+                        <!-- Controles para el Nombre de Empresa (Se ocultan al imprimir) -->
+                        <div class="brand-controls no-print" title="Edita el color y tamaño del nombre de la empresa">
+                            <input type="color" id="brandColor" onchange="updateBrandStyle('color', this.value)" value="#0056b3">
+                            <button onclick="updateBrandStyle('size', 1)" title="Aumentar tamaño">A+</button>
+                            <button onclick="updateBrandStyle('size', -1)" title="Reducir tamaño">A-</button>
+                        </div>
+                    </div>
+                    
+                    <div class="header-right">
+                        <div contenteditable="true" id="f_lugarFecha" class="editable-block" style="text-align: right; color: var(--footer-color);">Monterrey, N.L. a 24 de noviembre del 2026.</div>
+                        <button type="button" class="date-btn no-print" onclick="pickDate('f_lugarFecha')" title="Elegir fecha en el calendario">📅 Elegir fecha</button>
+                        <input type="date" class="date-hidden" id="dp_f_lugarFecha" onchange="applyDate('f_lugarFecha', this.value)">
+                    </div>
+                </div>
+
+                <!-- Client Info Box -->
+                <div class="client-info-box">
+                    <div contenteditable="true" id="f_cliente" class="editable-block bold" style="font-size: 1.1em; text-transform: uppercase;">DEPARTAMENTOS NOOK<br>Monterrey, Nuevo León</div>
+                    <div style="margin-top: 8px;">At'n: <span contenteditable="true" id="f_atn" class="bold">Ing. </span></div>
+                </div>
+
+                <div class="title-row">
+                    <div contenteditable="true" id="f_proyecto" class="project-title">PROYECTO NOOK</div>
+                    <div class="folio">Folio: <span contenteditable="true" id="f_folio">NSR-HVAC-2026-001</span></div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="kpi"><small contenteditable="true" id="k1_t">Costo del proyecto</small><b contenteditable="true" id="r_monto" oninput="calcTotales()">$70,000.00</b><span class="sub" contenteditable="true" id="k1_s">M.N. + IVA</span></div>
+                    <div class="kpi"><small contenteditable="true" id="k2_t">Total con IVA (16%)</small><b contenteditable="true" id="r_total">$81,200.00</b><span class="sub" contenteditable="true" id="k2_s">calculado automáticamente</span></div>
+                    <div class="kpi"><small contenteditable="true" id="k3_t">Plazo</small><b contenteditable="true" id="r_plazo">5 semanas</b><span class="sub" contenteditable="true" id="k3_s">desde anticipo e información</span></div>
+                    <div class="kpi"><small contenteditable="true" id="k4_t">Vigencia</small><b contenteditable="true" id="r_vigencia">30 días</b><span class="sub" contenteditable="true" id="k4_s">anticipo 50%</span></div>
+                </div>
+
+                <div contenteditable="true" id="f_intro" class="editable-block" style="margin-bottom: 25px;">
+                    En atención a su amable invitación al levantamiento del análisis del sistema de ventilación dentro de los Departamentos Nook, tenemos el gusto de presentar a su consideración la siguiente Oferta:
+                </div>
+
+                <!-- Sections -->
+                <h2><input type="checkbox" class="sec-chk no-print" contenteditable="false" checked title="Incluir este punto en la cotización impresa" onchange="toggleSec(this)"><span class="sec-num"></span>GENERALES.</h2>
+                <div contenteditable="true" id="s_1" class="editable-block">
+                    El Cliente requiere se le cotice el desarrollo de la Ingeniería para la ingeniería HVAC, dentro de las Instalaciones de Torre Nook N.L.<br><br>
+                    Nuestra empresa cuenta con el personal técnico, administrativo y equipo requerido para el desarrollo del trabajo antes mencionado, con amplia experiencia en la realización de proyectos y capacidad para iniciar los trabajos de forma inmediata.
+                </div>
+
+                <h2><input type="checkbox" class="sec-chk no-print" contenteditable="false" checked title="Incluir este punto en la cotización impresa" onchange="toggleSec(this)"><span class="sec-num"></span>ALCANCE DE LOS TRABAJOS.</h2>
+                <div contenteditable="true" id="s_2" class="editable-block">
+                    El alcance de nuestro trabajo consistirá en el desarrollo de las actividades listadas a continuación:<br>
+                    <ul style="margin-top: 10px;">
+                        <li>Se planea dividir el área de la planta por zonas, realizando la medición de las condiciones climáticas y definiendo la cantidad de aire que se encuentra recirculando por zonas.</li>
+                        <li>Las mediciones se realizarán en campo, requiriendo visitas a planta con autorización para realizar el levantamiento de los parámetros.</li>
+                        <li>En plano, una vez analizadas las condiciones, se instalarán los equipos, ductería y todo lo relacionado a satisfacer las condiciones de operación.</li>
+                        <li>Se realizará el reporte de las condiciones climáticas durante el año, tomando en cuenta las condiciones críticas de temperatura y humedad, con el soporte de sus cartas psicrométricas por zona.</li>
+                    </ul>
+                    Para la estimación del presente alcance, nuestra empresa se basará en la información proporcionada por parte del cliente.
+                </div>
+
+                <h2><input type="checkbox" class="sec-chk no-print" contenteditable="false" checked title="Incluir este punto en la cotización impresa" onchange="toggleSec(this)"><span class="sec-num"></span>PROGRAMACIÓN Y EJECUCIÓN DE LOS TRABAJOS.</h2>
+                <div contenteditable="true" id="s_3" class="editable-block">
+                    La duración de la ingeniería será de <span class="bold">5 semanas</span>, a partir de recibir la información necesaria y el anticipo correspondiente.<br><br>
+                    El desarrollo de las actividades será de acuerdo a la programación estimada al inicio del proyecto, la cual será acordada, definida y aprobada en conjunto con El Cliente para el inicio de las actividades.
+                </div>
+
+                <div contenteditable="true" id="s_3_tabla" class="editable-block">
+                    <table class="phase-table">
+                        <tr><th style="width:18%">Semana</th><th>Actividad (referencial, ajustable)</th><th style="width:28%">Hito</th></tr>
+                        <tr><td>1</td><td>Recepción de información, visitas y mediciones en campo</td><td>Levantamiento completado</td></tr>
+                        <tr><td>2 - 3</td><td>Análisis por zonas, cálculo de aire recirculado y cartas psicrométricas</td><td>Revisión de memorias con el cliente</td></tr>
+                        <tr><td>4</td><td>Planos de ductería, equipos y tubería</td><td>Revisión de planos</td></tr>
+                        <tr><td>5</td><td>Reporte anual de condiciones climáticas, ajustes y entrega final</td><td>Carta de recepción</td></tr>
+                    </table>
+                </div>
+
+                <h2><input type="checkbox" class="sec-chk no-print" contenteditable="false" checked title="Incluir este punto en la cotización impresa" onchange="toggleSec(this)"><span class="sec-num"></span>ELEMENTOS QUE PROPORCIONARÁ EL CLIENTE.</h2>
+                <div contenteditable="true" id="s_4" class="editable-block">
+                    El Cliente será, desde el inicio de la operación, el representante cuya función principal será servir de enlace entre ambas partes para revisión y aprobación del trabajo desarrollado por nuestra empresa, así como para tomar decisiones en todos los asuntos que se originen durante el desarrollo de la ingeniería.<br><br>
+                    El Cliente proporcionará al inicio de las actividades sus estándares, procedimientos y formatos que se deberán aplicar en el proyecto para los diferentes documentos a elaborar (planos, especificaciones, listados de equipos en operación).
+                </div>
+
+                <h2><input type="checkbox" class="sec-chk no-print" contenteditable="false" checked title="Incluir este punto en la cotización impresa" onchange="toggleSec(this)"><span class="sec-num"></span>CONSIDERACIONES GENERALES.</h2>
+                <div contenteditable="true" id="s_5" class="editable-block">
+                    Para el análisis y desarrollo de estas actividades nuestra empresa dispone de su propio centro de diseño, proyección y cálculo.<br>
+                    Los documentos serán elaborados por computadora y entregados en medio digital (CD/USB) y copia impresa en los formatos siguientes:<br>
+                    <ul>
+                        <li><strong>Planos:</strong> En tamaño ocho cartas de 61 x 91 cm (24" x 36") y archivos electrónicos en AutoCAD (*.dwg).</li>
+                        <li><strong>Memorias de cálculo y Memoria Descriptiva:</strong> En tamaño carta de 21.6 x 27.9 cm (8 1/2" x 11") y archivos electrónicos en formato Adobe PDF (*.pdf).</li>
+                    </ul>
+                    Para todos los documentos de ingeniería se considera la entrega de una impresión final como trabajo terminado. Cualquier modificación al alcance original de la ingeniería especificada será negociada por separado y de común acuerdo con nuestra empresa.<br><br>
+                    Los servicios de ingeniería se desarrollarán en las oficinas de nuestra empresa, en la ciudad de Guadalupe, N.L. Asimismo, las juntas de ingeniería se realizarán en la ubicación que el cliente asigne.<br><br>
+                    Nuestra empresa desarrollará la ingeniería aplicando procedimientos administrativos internos para el control de flujo de la información de las revisiones por el cliente, documentos aprobados, revisión cruzada entre disciplinas, estimaciones y reportes de avance, seguimiento del programa de actividades y elaboración de minutas de juntas.<br><br>
+                    <strong>Todos nuestros trabajos están basados en las normas siguientes:</strong>
+                    <ul style="column-count: 2; column-gap: 40px;">
+                        <li>SMACNA - Sheet metal Contractors.</li>
+                        <li>NEC - National Electric Code.</li>
+                        <li>NOM - Norma Oficial Mexicana.</li>
+                        <li>NPC - National Plumbing Code.</li>
+                        <li>NFPA - National Fire Protection Association.</li>
+                        <li>Reglamento del Heroico Cuerpo de Bomberos de Monterrey, N.L. y D.F.</li>
+                    </ul>
+                </div>
+
+                <h2><input type="checkbox" class="sec-chk no-print" contenteditable="false" checked title="Incluir este punto en la cotización impresa" onchange="toggleSec(this)"><span class="sec-num"></span>OFERTA.</h2>
+                <div contenteditable="true" id="s_6" class="editable-block">
+                    Por la realización de los servicios profesionales de ingeniería, se cobrará:<br><br>
+                    El monto total de nuestra propuesta es de <strong>$<span id="o_monto">70,000.00</span> M.N más IVA.</strong><br><br>
+                    El costo por actualización de documento una vez terminada la ingeniería (terminación del proceso ejecutivo) es de $8,160.00 M.N. más IVA.
+                </div>
+
+                <h2><input type="checkbox" class="sec-chk no-print" contenteditable="false" checked title="Incluir este punto en la cotización impresa" onchange="toggleSec(this)"><span class="sec-num"></span>FORMA DE PAGO.</h2>
+                <div contenteditable="true" id="s_7" class="editable-block">
+                    El Cliente pagará a nuestra empresa un anticipo del <strong>50%</strong> y el resto contra avance, facturación a un plazo no mayor a 7 (siete) días a partir de la presentación de las facturas.
+                </div>
+
+                <h2><input type="checkbox" class="sec-chk no-print" contenteditable="false" checked title="Incluir este punto en la cotización impresa" onchange="toggleSec(this)"><span class="sec-num"></span>VALIDEZ DE LA OFERTA.</h2>
+                <div contenteditable="true" id="s_8" class="editable-block">
+                    Nuestra propuesta se considera firme en costo durante un término de <strong>30 (treinta) días</strong>, siempre y cuando no se modifiquen las bases de la misma. Después de esta fecha nos reservamos el derecho de rectificarla si fuera necesario.<br>
+                    Cualquier cambio que se presentase en el salario mínimo repercutirá directamente proporcional en el costo de este presupuesto.<br>
+                    El presente presupuesto considera la ejecución integral del proyecto; en caso de que se desee asignar parcialmente, este será sujeto a revisión, modificando los importes unitarios presentados.
+                </div>
+
+                <h2><input type="checkbox" class="sec-chk no-print" contenteditable="false" checked title="Incluir este punto en la cotización impresa" onchange="toggleSec(this)"><span class="sec-num"></span>CONSIDERACIONES PARTICULARES.</h2>
+                <div contenteditable="true" id="s_9" class="editable-block">
+                    Se deberá proporcionar oportunamente toda la información necesaria para el inicio de las actividades, la cual se definirá completamente desde el inicio del proyecto, como son:<br>
+                    <ul>
+                        <li>Dibujos de instalaciones existentes.</li>
+                        <li>Especificaciones técnicas.</li>
+                    </ul>
+                </div>
+
+                <h2><input type="checkbox" class="sec-chk no-print" contenteditable="false" checked title="Incluir este punto en la cotización impresa" onchange="toggleSec(this)"><span class="sec-num"></span>CONDICIONES GENERALES.</h2>
+                <div contenteditable="true" id="s_10" class="editable-block">
+                    Se incluyen 2 juntas de coordinación de ingenierías, señalización y otras disciplinas.<br>
+                    No se incluye cualquier otra especialidad no especificada en este presupuesto.<br>
+                    Se firmará carta de recepción de ingeniería una vez entregado el proyecto.<br>
+                    Se considera aire acondicionado y ventilación en las áreas asignadas al proyecto HVAC.<br><br>
+                    Quedo a sus órdenes para cualquier duda o comentario al respecto, y en espera de ser favorecidos con su respuesta.
+                </div>
+                
+                <h2><input type="checkbox" class="sec-chk no-print" contenteditable="false" checked title="Incluir este punto en la cotización impresa" onchange="toggleSec(this)"><span class="sec-num"></span>ENTREGABLES.</h2>
+                <div class="entregables-grid" id="entGrid">
+                    <div class="ent-col" id="entColA">
+                        <label class="ent-toggle no-print"><input type="checkbox" id="chk_entA" checked onchange="toggleEnt()"> Incluir toda la columna</label>
+                        <div contenteditable="true" id="s_entregables_a" class="editable-block">
+                            <strong>Documentación:</strong>
+                            <ol style="list-style-type: decimal; padding-left: 20px;"><li><input type="checkbox" class="item-chk no-print" contenteditable="false" checked title="Incluir en el documento impreso" onchange="toggleItem(this)">Ingeniería Básica</li><li><input type="checkbox" class="item-chk no-print" contenteditable="false" checked title="Incluir en el documento impreso" onchange="toggleItem(this)">Memorias de Cálculo</li><li><input type="checkbox" class="item-chk no-print" contenteditable="false" checked title="Incluir en el documento impreso" onchange="toggleItem(this)">Diagramas de Tuberías</li><li><input type="checkbox" class="item-chk no-print" contenteditable="false" checked title="Incluir en el documento impreso" onchange="toggleItem(this)">Planos de ductería</li><li><input type="checkbox" class="item-chk no-print" contenteditable="false" checked title="Incluir en el documento impreso" onchange="toggleItem(this)">Planos de bases para equipos</li><li><input type="checkbox" class="item-chk no-print" contenteditable="false" checked title="Incluir en el documento impreso" onchange="toggleItem(this)">Plano de tubería para refrigeración y condensados a pie de equipo requeridos</li></ol>
+                        </div>
+                    </div>
+                    <div class="ent-col" id="entColB">
+                        <label class="ent-toggle no-print"><input type="checkbox" id="chk_entB" checked onchange="toggleEnt()"> Incluir toda la columna</label>
+                        <div contenteditable="true" id="s_entregables_b" class="editable-block">
+                            <strong>Diseño del Sistema:</strong>
+                            <ol style="list-style-type: decimal; padding-left: 20px;"><li><input type="checkbox" class="item-chk no-print" contenteditable="false" checked title="Incluir en el documento impreso" onchange="toggleItem(this)">Diseño de Sistema HVAC</li><li><input type="checkbox" class="item-chk no-print" contenteditable="false" checked title="Incluir en el documento impreso" onchange="toggleItem(this)">Equipo y accesorios (debe considerarse cualquier sistema)</li><li><input type="checkbox" class="item-chk no-print" contenteditable="false" checked title="Incluir en el documento impreso" onchange="toggleItem(this)">Distribución de aire</li><li><input type="checkbox" class="item-chk no-print" contenteditable="false" checked title="Incluir en el documento impreso" onchange="toggleItem(this)">Purificación de aire (Filtración)</li><li><input type="checkbox" class="item-chk no-print" contenteditable="false" checked title="Incluir en el documento impreso" onchange="toggleItem(this)">Presurización</li><li><input type="checkbox" class="item-chk no-print" contenteditable="false" checked title="Incluir en el documento impreso" onchange="toggleItem(this)">Materiales</li><li><input type="checkbox" class="item-chk no-print" contenteditable="false" checked title="Incluir en el documento impreso" onchange="toggleItem(this)">Sistemas de seguridad</li><li><input type="checkbox" class="item-chk no-print" contenteditable="false" checked title="Incluir en el documento impreso" onchange="toggleItem(this)">Control de ruido</li><li><input type="checkbox" class="item-chk no-print" contenteditable="false" checked title="Incluir en el documento impreso" onchange="toggleItem(this)">Identificación de equipos</li></ol>
+                        </div>
+                    </div>
+                </div>
+                <div contenteditable="true" id="s_entregables_nota" class="editable-block"><em>Suministro eléctrico y canalización de los sistemas de control por cuenta de cliente.</em></div>
+
+                <!-- Signature Section -->
+                <div class="signature-section">
+                    <!-- ATENTAMENTE ahora está arriba de la firma -->
+                    <div contenteditable="true" id="f_despedida" class="editable-block" style="letter-spacing: 4px; font-weight: bold; margin-bottom: 20px; font-size: 1.1em; color: var(--text-color);">A T E N T A M E N T E</div>
+                    
+                    <div class="sig-container" onclick="document.getElementById('sigInput').click()" title="Haz clic para cargar tu firma (png/jpg)">
+                        <img id="digitalSignature" src='data:image/svg+xml;utf8,<svg width="200" height="80" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="transparent"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="12" fill="%23999">Clic para insertar Firma</text></svg>' alt="Firma" />
+                        <input type="file" id="sigInput" style="display:none" accept="image/*" onchange="changeImage(event, 'digitalSignature')">
+                    </div>
+                    
+                    <div class="signature-line"></div>
+                    <div contenteditable="true" id="f_firmaNombre" class="bold editable-block" style="font-size: 1.1em;">Ing. Manuel Soto Ramírez</div>
+                    <div contenteditable="true" id="f_firmaPuesto" class="editable-block" style="color: var(--footer-color);">Coordinador de proyectos NSR</div>
+                </div>
+
+            <div class="accept-box">
+                    <div contenteditable="true" id="f_aceptaTitulo" class="bold" style="text-transform:uppercase; color:var(--primary-color); letter-spacing:.5px;">Aceptación de la propuesta</div>
+                    <div contenteditable="true" id="f_aceptaTexto" class="editable-block" style="margin-top:6px;">El Cliente acepta los alcances, el monto y las condiciones descritas en la presente propuesta y autoriza el inicio de los trabajos.</div>
+                    <div class="accept-grid">
+                        <div><div class="accept-line" contenteditable="true" id="f_aceptaNombre">Nombre y firma del Cliente</div></div>
+                        <div><div class="accept-line" contenteditable="true" id="f_aceptaPuesto">Puesto / Empresa</div></div>
+                        <div><div class="accept-line" contenteditable="true" id="f_aceptaFecha">Fecha</div>
+                            <button type="button" class="date-btn no-print" onclick="pickDate('f_aceptaFecha')">📅 Elegir fecha</button>
+                            <input type="date" class="date-hidden" id="dp_f_aceptaFecha" onchange="applyDate('f_aceptaFecha', this.value)"></div>
+                    </div>
+                </div>
+
+            </div> <!-- End content-body -->
+
+            <!-- Editable Footer / Membrete -->
+            <div class="document-footer">
+                <div contenteditable="true" id="f_direccionFooter">DIRECCIÓN: CUERNAVACA N. 4114, COL. NUEVO SAN RAFAEL, GUADALUPE, NVO. LEÓN, C.P. 67110</div>
+            </div>
+
+        </div> <!-- End document -->
+    </div>
+
+    <div class="modal-bg no-print" id="confirmModal">
+        <div class="modal-box">
+            <div style="font-weight:700; margin-bottom:6px;">¿Limpiar los datos de la cotización?</div>
+            <div style="font-size:13px;">Se borrarán cliente, atención, folio, monto, logotipo, firma y datos de aceptación. Los textos fijos de cada punto se conservan y todas las casillas se vuelven a marcar.</div>
+            <button onclick="doClear()">Sí, limpiar</button><button onclick="closeConfirm()" style="background:#7f8fa6">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Funciones de Fuente Global
+        let currentFontSize = 14;
+        function changeFontSize(step) {
+            currentFontSize += step;
+            if (currentFontSize < 10) currentFontSize = 10;
+            if (currentFontSize > 24) currentFontSize = 24;
+            document.getElementById('docContainer').style.fontSize = currentFontSize + 'px';
+        }
+
+        // Estilos para el Nombre de Empresa en el Header
+        function rgbToHex(c) {
+            if (!c) return '#0056b3';
+            if (c.startsWith('#')) return c;
+            const m = c.match(/\d+/g);
+            if (!m || m.length < 3) return '#0056b3';
+            return '#' + m.slice(0,3).map(n => parseInt(n).toString(16).padStart(2,'0')).join('');
+        }
+
+        function updateBrandStyle(type, value) {
+            const el = document.getElementById('f_empresaHeader');
+            if(type === 'color') {
+                el.style.color = value;
+                document.getElementById('brandColor').value = rgbToHex(value);
+            } else if(type === 'size') {
+                let currentSize = parseInt(window.getComputedStyle(el).fontSize);
+                let newSize = currentSize + (value * 2);
+                if(newSize >= 12 && newSize <= 60) {
+                    el.style.fontSize = newSize + 'px';
+                }
+            }
+        }
+
+        const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+        function pickDate(id) {
+            const inp = document.getElementById('dp_' + id);
+            try { inp.showPicker(); } catch (e) { inp.focus(); inp.click(); }
+        }
+
+        function applyDate(id, v) {
+            if (!v) return;
+            const [y, m, d] = v.split('-').map(Number);
+            const txt = d + ' de ' + MESES[m - 1] + ' del ' + y;
+            const el = document.getElementById(id);
+            if (id === 'f_lugarFecha') {
+                const mm = (el.innerText || '').match(/^(.*?\sa\s)\d/);
+                el.innerText = (mm ? mm[1] : 'Monterrey, N.L. a ') + txt + '.';
+            } else {
+                el.innerText = txt;
+            }
+        }
+
+        function calcTotales() {
+            const txt = (document.getElementById('r_monto').innerText || '').trim().replace(/^\$/, '');
+            const n = parseFloat(txt.replace(/[^0-9.]/g, ''));
+            const o = document.getElementById('o_monto');
+            if (o) o.innerText = txt;
+            document.getElementById('r_total').innerText = isNaN(n) ? '—' :
+                '$' + (n * 1.16).toLocaleString('es-MX', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+
+        function toggleItem(cb) {
+            cb.toggleAttribute('checked', cb.checked);
+            cb.closest('li').classList.toggle('item-off', !cb.checked);
+        }
+
+        function secElements(h2) {
+            const els = [h2];
+            let n = h2.nextElementSibling;
+            while (n && n.tagName !== 'H2' && !n.classList.contains('signature-section') && !n.classList.contains('accept-box')) {
+                els.push(n); n = n.nextElementSibling;
+            }
+            return els;
+        }
+
+        function toggleSec(cb) {
+            const h2 = cb.closest('h2');
+            secElements(h2).forEach(e => e.classList.toggle('sec-off', !cb.checked));
+        }
+
+        function toggleEnt() {
+            const a = document.getElementById('chk_entA').checked;
+            const b = document.getElementById('chk_entB').checked;
+            [['entColA', a], ['entColB', b]].forEach(([id, on]) => {
+                const c = document.getElementById(id);
+                c.classList.toggle('off', !on); c.classList.toggle('dim', !on);
+            });
+            document.getElementById('entGrid').classList.toggle('solo', !(a && b));
+        }
+
+        // Función de Tema
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+        }
+
+        // Manejo de Imágenes (Logo y Firma)
+        function changeImage(event, imgId) {
+            const file = event.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById(imgId).src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Exportar a JSON
+        function exportJSON() {
+            const data = {};
+            document.querySelectorAll('[contenteditable="true"]').forEach(el => {
+                data[el.id] = { html: el.innerHTML, color: el.style.color, fontSize: el.style.fontSize };
+            });
+            data['chk_entA'] = document.getElementById('chk_entA').checked;
+            data['chk_entB'] = document.getElementById('chk_entB').checked;
+            data['sec_flags'] = Array.from(document.querySelectorAll('.sec-chk')).map(c => c.checked);
+            data['logoData'] = document.getElementById('companyLogo').src;
+            data['sigData'] = document.getElementById('digitalSignature').src;
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            
+            let clientName = document.getElementById('f_cliente').innerText.split('\n')[0].trim().replace(/[^a-z0-9]/gi, '_');
+            if(!clientName) clientName = "cotizacion";
+            const dateStr = new Date().toISOString().split('T')[0];
+            
+            a.download = `Propuesta_HVAC_${clientName}_${dateStr}.json`;
+            a.click();
+        }
+
+        // Importar desde JSON
+        function importJSON(event) {
+            const file = event.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        for(const key in data) {
+                            if(key === 'sec_flags') {
+                                document.querySelectorAll('.sec-chk').forEach((c, idx) => { c.checked = data[key][idx] !== false; toggleSec(c); });
+                            } else if(key === 'chk_entA' || key === 'chk_entB') {
+                                document.getElementById(key).checked = !!data[key];
+                            } else if(key === 'logoData') {
+                                document.getElementById('companyLogo').src = data[key];
+                            } else if(key === 'sigData') {
+                                document.getElementById('digitalSignature').src = data[key];
+                            } else {
+                                const el = document.getElementById(key);
+                                if(el && data[key].html !== undefined) {
+                                    el.innerHTML = data[key].html;
+                                    if(data[key].color) el.style.color = data[key].color;
+                                    if(data[key].fontSize) el.style.fontSize = data[key].fontSize;
+                                    
+                                    // Update color picker if it's the brand name
+                                    if(key === 'f_empresaHeader' && data[key].color) {
+                                        // Convert rgb to hex for input[type=color] if needed, 
+                                        // simplified here to just best effort setup.
+                                        let picker = document.getElementById('brandColor');
+                                        picker.value = rgbToHex(data[key].color);
+                                    }
+                                }
+                            }
+                        }
+                    } catch(err) {
+                        alert("Error al leer el archivo JSON.");
+                    }
+                    toggleEnt();
+                    document.querySelectorAll('.item-chk').forEach(cb => { cb.checked = cb.hasAttribute('checked'); });
+                    document.getElementById('importFile').value = '';
+                }
+                reader.readAsText(file);
+            }
+        }
+
+        // Limpiar Plantilla
+        const DEF_LOGO = document.getElementById('companyLogo').src;
+        const DEF_SIG = document.getElementById('digitalSignature').src;
+
+        function clearDocument() { document.getElementById('confirmModal').classList.add('open'); }
+        function closeConfirm() { document.getElementById('confirmModal').classList.remove('open'); }
+
+        function doClear() {
+            const set = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
+            document.getElementById('companyLogo').src = DEF_LOGO;
+            document.getElementById('digitalSignature').src = DEF_SIG;
+            const hoy = new Date();
+            set('f_lugarFecha', 'Monterrey, N.L. a ' + hoy.getDate() + ' de ' + MESES[hoy.getMonth()] + ' del ' + hoy.getFullYear() + '.');
+            set('f_cliente', 'NOMBRE DEL CLIENTE<br>Ciudad, Estado');
+            set('f_atn', 'Ing. ');
+            set('f_proyecto', 'NOMBRE DEL PROYECTO');
+            set('f_folio', 'NSR-HVAC-' + hoy.getFullYear() + '-001');
+            set('r_monto', '$0.00');
+            calcTotales();
+            set('f_firmaNombre', 'Ing. Manuel Soto Ramírez');
+            set('f_firmaPuesto', 'Coordinador de proyectos NSR');
+            set('f_aceptaNombre', 'Nombre y firma del Cliente');
+            set('f_aceptaPuesto', 'Puesto / Empresa');
+            set('f_aceptaFecha', 'Fecha');
+            const b = document.getElementById('f_empresaHeader');
+            b.innerHTML = 'GRUPO NSR HVAC Y CONTROL S. A. DE C. V.'; b.style.color = ''; b.style.fontSize = '18px';
+            document.getElementById('brandColor').value = '#0056b3';
+            document.querySelectorAll('.sec-chk').forEach(c => { c.checked = true; toggleSec(c); });
+            document.querySelectorAll('.item-chk').forEach(c => { c.checked = true; c.setAttribute('checked', ''); c.closest('li').classList.remove('item-off'); });
+            document.getElementById('chk_entA').checked = true;
+            document.getElementById('chk_entB').checked = true;
+            toggleEnt();
+            closeConfirm();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,2238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistema de Administración ERP - Cotizaciones, Almacén y Gastos</title>
+  <style>
+    :root {
+      --bg: #f4f6f9;
+      --surface: #ffffff;
+      --surface-alt: #f8fafc;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --primary: #0284c7;
+      --primary-hover: #0369a1;
+      --accent: #0f766e;
+      --danger: #dc2626;
+      --warning: #d97706;
+      --success: #16a34a;
+      --border: #e2e8f0;
+      --base-font: 14px;
+      --radius: 10px;
+      --shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    }
+
+    body.dark-mode {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-alt: #334155;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --primary: #38bdf8;
+      --primary-hover: #0284c7;
+      --accent: #14b8a6;
+      --border: #334155;
+      --shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      font-size: var(--base-font);
+      line-height: 1.5;
+      padding-bottom: 40px;
+    }
+
+    /* Barra Superior */
+    header.topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow);
+    }
+
+    .brand-title {
+      font-size: 1.25em;
+      font-weight: 700;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toolbar-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* Botones y Controles */
+    button, .btn-label {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 7px 13px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.92em;
+      transition: opacity 0.15s, transform 0.1s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    button:hover, .btn-label:hover {
+      opacity: 0.92;
+    }
+
+    button.secondary {
+      background: var(--surface-alt);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    button.success { background: var(--success); }
+    button.warning { background: var(--warning); }
+    button.danger { background: var(--danger); }
+
+    /* KPIs en una sola línea */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+      padding: 16px 20px 8px;
+    }
+
+    .kpi-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-width: 0;
+    }
+
+    .kpi-label {
+      font-size: 0.78em;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: var(--text-muted);
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .kpi-value {
+      font-size: 1.25em;
+      font-weight: 700;
+      margin-top: 4px;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Navegación de Pestañas */
+    nav.tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tab-btn {
+      background: var(--surface);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+
+    .tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    /* Contenedor Principal */
+    main.container {
+      padding: 16px 20px;
+    }
+
+    .module-section {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .module-section.active {
+      display: block;
+    }
+
+    .section-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* Formularios y Filtros */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+      background: var(--surface-alt);
+      padding: 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .form-group label {
+      font-size: 0.82em;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    input, select, textarea {
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 0.95em;
+      font-family: inherit;
+    }
+
+    /* Tablas */
+    .table-wrapper {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92em;
+    }
+
+    th, td {
+      padding: 9px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background: var(--surface-alt);
+      color: var(--text-muted);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    tr:hover td {
+      background: var(--surface-alt);
+    }
+
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .badge {
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.8em;
+      font-weight: 600;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+    }
+
+    /* Quitar flechas de inputs numéricos al imprimir y formato de impresión */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      opacity: 1;
+    }
+
+    @media (max-width: 1100px) {
+      .kpi-row {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media print {
+      header.topbar, nav.tabs, .no-print, .kpi-row {
+        display: none !important;
+      }
+      body, .module-section {
+        background: #fff !important;
+        color: #000 !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+      }
+      input[type=number]::-webkit-inner-spin-button,
+      input[type=number]::-webkit-outer-spin-button {
+        -webkit-appearance: none !important;
+        margin: 0 !important;
+      }
+      input[type=number] {
+        -moz-appearance: textfield !important;
+      }
+    }
+
+    /* ===== EMPRESA, VISTA PREVIA, EMPLEADOS, CUENTAS, SELECTORES ===== */
+    .brand-title img#brandLogo{max-height:34px;max-width:140px;object-fit:contain;border-radius:4px}
+    #printHeader{display:none}
+    .pv-head{display:flex;align-items:center;gap:14px;border-bottom:2px solid var(--primary);padding-bottom:10px;margin-bottom:14px}
+    .pv-head img{max-height:56px;max-width:180px;object-fit:contain}
+    .pv-head .pv-info{flex:1}
+    .pv-head .pv-nombre{font-size:1.35em;font-weight:800;color:#0f172a}
+    .pv-head .pv-datos{font-size:.82em;color:#475569}
+    .pv-head .pv-meta{text-align:right;font-size:.82em;color:#475569}
+    .modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:500;display:none;align-items:center;justify-content:center;padding:14px}
+    .modal-bg.open{display:flex}
+    .modal-box{background:var(--surface);color:var(--text);border-radius:12px;padding:20px;width:100%;max-width:480px;max-height:92vh;overflow:auto;box-shadow:0 12px 40px rgba(0,0,0,.35)}
+    .modal-box.wide{max-width:960px}
+    .modal-box h3{margin-bottom:12px}
+    .modal-box .form-group{margin-bottom:10px}
+    .logo-box{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .logo-prev{width:130px;height:70px;border:1px dashed var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;background:var(--surface-alt);overflow:hidden;font-size:.78em;color:var(--text-muted)}
+    .logo-prev img{max-width:100%;max-height:100%;object-fit:contain}
+    .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+    #previewOverlay{position:fixed;inset:0;z-index:400;background:#475569;display:none;flex-direction:column}
+    #previewOverlay.open{display:flex}
+    .pv-bar{background:#0f172a;color:#fff;padding:10px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .pv-bar strong{margin-right:auto}
+    .pv-bar select{background:#1e293b;color:#fff;border:1px solid #475569}
+    .pv-scroll{flex:1;overflow:auto;padding:18px}
+    #previewPaper{background:#fff;color:#000;margin:0 auto;padding:22px 26px;box-shadow:0 6px 24px rgba(0,0,0,.4);border-radius:4px;max-width:1100px;font-size:12.5px}
+    #previewPaper.vertical{max-width:820px}
+    #previewPaper .table-wrapper{overflow:visible}
+    #previewPaper th{background:#e2e8f0;color:#0f172a}
+    #previewPaper td,#previewPaper th{color:#000;white-space:normal}
+    #previewPaper tr:hover td{background:transparent}
+    .row-actions{white-space:nowrap;display:flex;gap:6px}
+    .tag-tipo{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.8em;font-weight:700;background:var(--surface-alt);border:1px solid var(--border)}
+    .mono{font-family:Consolas,'Courier New',monospace;letter-spacing:.3px}
+    .aviso-nueva{padding:10px 14px;border-radius:8px;background:#ecfeff;border:1px solid #67e8f9;color:#155e75;font-weight:600}
+    .aviso-borrador{margin-top:8px;padding:8px 12px;border-radius:8px;background:#fffbeb;border:1px solid #fcd34d;color:#92400e;font-weight:600}
+    .msg-cot{margin:0 0 10px;padding:10px 14px;border-radius:8px;background:#ecfdf5;border:1px solid #6ee7b7;color:#065f46;font-weight:700}
+    .msg-cot.err{background:#fef2f2;border-color:#fca5a5;color:#991b1b}
+    .form-grid.modo-edicion{outline:2px solid var(--warning);background:rgba(217,119,6,.08)}
+    .cli-pick{display:flex;gap:6px;align-items:center}
+    .cli-pick select{flex:1;min-width:0}
+    #cot_cliente_info{display:block;margin-top:4px;font-size:.8em;color:var(--text-muted);line-height:1.35}
+    .pk-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+    .pk-bar input{flex:1;min-width:200px}
+    .pk-ctx{display:grid;grid-template-columns:120px 1.4fr 1.6fr;gap:10px;background:var(--surface-alt);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:10px}
+    .pk-ctx label{font-size:.8em;color:var(--text-muted);font-weight:600;display:block;margin-bottom:3px}
+    .pk-ctx .cli-line{display:flex;gap:6px}
+    .pk-ctx .cli-line select{flex:1;min-width:0}
+    .pk-status{min-height:22px;font-weight:600;color:var(--success);margin:6px 0}
+    .pk-status.err{color:var(--danger)}
+    .pk-wrap{max-height:46vh;overflow:auto;border:1px solid var(--border);border-radius:8px}
+    .pk-wrap table{margin:0}
+    .pk-qty{width:76px !important}
+    .moneda-box{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border:1px solid var(--border);border-radius:8px;background:var(--surface-alt)}
+    .moneda-box label{font-size:.82em;font-weight:600;margin:0}
+    .moneda-box select{width:auto}
+    .nota-moneda{margin-top:6px;font-size:.82em;color:var(--text-muted)}
+    @media (max-width:760px){.pk-ctx{grid-template-columns:1fr}}
+    @media print{
+      @page{size:auto;margin:0}
+      html body{padding:12mm 14mm !important}
+      #mod-cotizaciones > .section-header{display:none !important}
+      .aviso-borrador,.msg-cot{display:none !important}
+      tr{page-break-inside:avoid}
+      thead{display:table-header-group}
+      #printHeader{display:flex !important;align-items:center;gap:14px;border-bottom:2px solid #0284c7;padding-bottom:8px;margin-bottom:12px}
+      #printHeader img{max-height:52px;max-width:170px;object-fit:contain}
+      #printHeader .pv-nombre{font-size:1.3em;font-weight:800;color:#000}
+      #printHeader .pv-datos,#printHeader .pv-meta{font-size:.8em;color:#333}
+      .modal-bg{display:none !important}
+      body.previewing > *:not(#previewOverlay){display:none !important}
+      body.previewing #previewOverlay{position:static !important;display:block !important;background:#fff !important}
+      body.previewing .pv-bar{display:none !important}
+      body.previewing .pv-scroll{overflow:visible !important;padding:0 !important}
+      body.previewing #previewPaper{box-shadow:none !important;max-width:none !important;padding:0 !important;margin:0 !important}
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BARRA SUPERIOR -->
+  <header class="topbar no-print">
+    <div class="brand-title">
+      <img id="brandLogo" alt="Logo" style="display:none" /><span id="brandName">⚙️ Sistema de Administración ERP (Español)</span>
+    </div>
+    <div class="toolbar-actions">
+      <button class="secondary" onclick="cambiarFuente(-1)" title="Reducir fuente">A-</button>
+      <button class="secondary" onclick="cambiarFuente(1)" title="Aumentar fuente">A+</button>
+      <button class="secondary" onclick="alternarModoOscuro()">🌓 Tema</button>
+      <button class="success" onclick="descargarJSON()">💾 Guardar JSON</button>
+      <label class="btn-label secondary">
+        📂 Cargar JSON
+        <input type="file" id="inputJSON" accept=".json" style="display:none" onchange="cargarJSON(event)" />
+      </label>
+      <button class="warning" onclick="exportarCSVActivo()">📊 Exportar CSV/Excel</button>
+      <button class="secondary" onclick="abrirEmpresaModal()">🏢 Personalizar empresa</button>
+      <button class="secondary" onclick="abrirVistaPrevia()">👁️ Vista previa</button>
+      <button onclick="window.print()">🖨️ Imprimir / PDF</button>
+      <button class="danger" onclick="limpiarMemoria()">🗑️ Reiniciar Datos</button>
+    </div>
+  </header>
+
+  <div id="printHeader"></div>
+
+  <!-- FILA ÚNICA DE 6 INDICADORES (KPIs) -->
+  <section class="kpi-row no-print">
+    <div class="kpi-card">
+      <span class="kpi-label">Total Cotizado (Neto)</span>
+      <span class="kpi-value" id="kpiCotizado">$0.00</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-label">Gastos Registrados (Bruto)</span>
+      <span class="kpi-value" id="kpiGastos">$0.00</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-label">Utilidad Operativa Est.</span>
+      <span class="kpi-value" id="kpiUtilidad">$0.00</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-label">Margen Promedio (%)</span>
+      <span class="kpi-value" id="kpiMargen">0.0%</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-label">IVA Acreditable (Gastos)</span>
+      <span class="kpi-value" id="kpiIVA">$0.00</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-label">Catálogo / Clientes / Prov.</span>
+      <span class="kpi-value" id="kpiRegistros">0 / 0 / 0</span>
+    </div>
+  </section>
+
+  <!-- NAVEGACIÓN ENTRE MÓDULOS -->
+  <nav class="tabs no-print">
+    <button class="tab-btn active" onclick="abrirModulo('mod-cotizaciones', this)">1. Cotizaciones (31)</button>
+    <button class="tab-btn" onclick="abrirModulo('mod-gastos', this)">2. Gastos (12)</button>
+    <button class="tab-btn" onclick="abrirModulo('mod-almacen', this)">3. Almacén (13)</button>
+    <button class="tab-btn" onclick="abrirModulo('mod-clientes', this)">4. Clientes y Contactos (21)</button>
+    <button class="tab-btn" onclick="abrirModulo('mod-proveedores', this)">5. Proveedores (11)</button>
+    <button class="tab-btn" id="tabEmpleados" onclick="abrirModulo('mod-empleados', this)">6. Empleados (01)</button>
+    <button class="tab-btn" id="tabCuentas" onclick="abrirModulo('mod-cuentas', this)">7. Cuentas Bancarias (00)</button>
+  </nav>
+
+  <main class="container">
+
+    <!-- 1. MÓDULO COTIZACIONES -->
+    <section id="mod-cotizaciones" class="module-section active">
+      <div class="section-header">
+        <h2>📑 Gestión de Cotizaciones y Cálculos</h2>
+        <div class="toolbar-actions no-print">
+          <button class="success" onclick="nuevaCotizacion()">🆕 Nueva Cotización</button>
+          <button class="success" onclick="guardarCotizacion()" title="Guarda la cotización que estás capturando">💾 Guardar Cotización</button>
+          <button onclick="abrirSelectorAlmacen()">📦 Agregar del Almacén</button>
+          <div class="moneda-box" title="Moneda en la que se muestran costos, precios, subtotal, IVA y total (sin conversión)">
+            <label for="cfg_moneda">💱 Moneda:</label>
+            <select id="cfg_moneda" onchange="cambiarMoneda()">
+              <option value="USD">USD (Dólares)</option>
+              <option value="MXN">MXN (Pesos mexicanos)</option>
+            </select>
+          </div>
+          <label>Filtrar No. Cotización:</label>
+          <select id="filtroCotiz" onchange="renderCotizaciones()">
+            <option value="">Todas las cotizaciones</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="msgCot" class="msg-cot no-print" style="display:none"></div>
+
+      <!-- Encabezado de impresión limpio -->
+      <div id="resumenCotizacionActiva" style="margin-bottom: 14px; padding: 12px; background: var(--surface-alt); border-radius: 8px; border: 1px solid var(--border);"></div>
+
+      <form class="form-grid no-print" id="formCotiz" onsubmit="guardarPosicionCotizacion(event)">
+        <div class="form-group">
+          <label>No. Cotización</label>
+          <input type="number" id="cot_num" value="1002" required />
+        </div>
+        <div class="form-group">
+          <label>Fecha</label>
+          <input type="date" id="cot_fecha" value="2023-07-14" required />
+        </div>
+        <div class="form-group">
+          <label>Cliente</label>
+          <div class="cli-pick">
+            <select id="cot_cliente"></select>
+            <button type="button" class="secondary" onclick="abrirSelectorCliente()" title="Buscar en Clientes y Contactos">🔍</button>
+          </div>
+          <small id="cot_cliente_info"></small>
+        </div>
+        <div class="form-group">
+          <label>Título del Proyecto</label>
+          <input type="text" id="cot_titulo" placeholder="Proyecto / Tablero..." required />
+        </div>
+        <div class="form-group">
+          <label>Posición</label>
+          <input type="number" id="cot_pos" value="10" required />
+        </div>
+        <div class="form-group">
+          <label>Cantidad</label>
+          <input type="number" step="1" min="1" id="cot_cant" value="1" oninput="recalcularFormCotiz()" required />
+        </div>
+        <div class="form-group">
+          <label>Unidad</label>
+          <input type="text" id="cot_art" value="pza." />
+        </div>
+        <div class="form-group">
+          <label>Descripción (escribe o elige del Almacén)</label>
+          <input type="text" id="cot_oferta" list="listaAlmacenDL" placeholder="Escribe, o elige un artículo del Almacén" oninput="alEscribirDescripcion()" autocomplete="off" />
+          <datalist id="listaAlmacenDL"></datalist>
+        </div>
+        <div class="form-group">
+          <label>Costo Unitario ($)</label>
+          <input type="number" step="0.01" id="cot_ek" value="100" oninput="recalcularFormCotiz()" required />
+        </div>
+        <div class="form-group">
+          <label>Margen (%)</label>
+          <input type="number" step="0.1" id="cot_margen" value="15" oninput="recalcularFormCotiz()" required />
+        </div>
+        <div class="form-group">
+          <label>Precio Unitario Venta ($)</label>
+          <input type="number" step="0.01" id="cot_pu" value="115" required />
+        </div>
+        <div class="form-group" style="justify-content: flex-end;">
+          <button type="submit" class="success" id="btnGuardarCot">➕ Agregar Posición</button>
+          <button type="button" class="secondary" id="btnCancelarCot" style="display:none" onclick="cancelarEdicion('cot')">✕ Cancelar</button>
+          <button type="button" onclick="guardarCotizacion()">💾 Guardar Cotización</button>
+        </div>
+      </form>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Cotización</th>
+              <th>Fecha</th>
+              <th>Pos</th>
+              <th>Cant.</th>
+              <th>Unid.</th>
+              <th>Cód. Almacén</th>
+              <th>Descripción</th>
+              <th class="num">Costo Unit.</th>
+              <th class="num">Margen %</th>
+              <th class="num">Precio Unit.</th>
+              <th class="num">Subtotal</th>
+              <th class="no-print">Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tablaCotizaciones"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 2. MÓDULO GASTOS -->
+    <section id="mod-gastos" class="module-section">
+      <div class="section-header">
+        <h2>💳 Control de Gastos, Facturación y Hacienda</h2>
+        <div class="toolbar-actions no-print">
+          <input type="text" id="buscarGasto" placeholder="Buscar por descripción, cuenta, responsable..." oninput="renderGastos()" />
+          <select id="filtroGastor" onchange="renderGastos()">
+            <option value="">Todos los Responsables</option>
+          </select>
+          <select id="filtroProyectoGasto" onchange="renderGastos()">
+            <option value="">Todos los Proyectos</option>
+          </select>
+        </div>
+      </div>
+
+      <form class="form-grid no-print" id="formGasto" onsubmit="guardarGasto(event)">
+        <div class="form-group">
+          <label>Fecha</label>
+          <input type="date" id="gas_fecha" required />
+        </div>
+        <div class="form-group">
+          <label>Responsable</label>
+          <input type="text" id="gas_gastor" value="Fred" required />
+        </div>
+        <div class="form-group">
+          <label>Descripción</label>
+          <input type="text" id="gas_desc" placeholder="Concepto del gasto" required />
+        </div>
+        <div class="form-group">
+          <label>Importe Neto ($)</label>
+          <input type="number" step="0.01" id="gas_neto" oninput="calcularFormGasto()" required />
+        </div>
+        <div class="form-group">
+          <label>IVA (%)</label>
+          <input type="number" step="0.01" id="gas_ivaporc" value="16" oninput="calcularFormGasto()" />
+        </div>
+        <div class="form-group">
+          <label>Monto IVA ($)</label>
+          <input type="number" step="0.01" id="gas_ivacant" readonly />
+        </div>
+        <div class="form-group">
+          <label>Total Bruto ($)</label>
+          <input type="number" step="0.01" id="gas_bruto" required />
+        </div>
+        <div class="form-group">
+          <label>Tipo Comprobante</label>
+          <select id="gas_tipo">
+            <option value="Fact">Factura Fiscal (Hacienda)</option>
+            <option value="Nota">Nota / Justificado</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>No. Factura / Nota</label>
+          <input type="text" id="gas_docno" placeholder="Folio" />
+        </div>
+        <div class="form-group">
+          <label>Cuenta</label>
+          <input type="text" id="gas_cuenta" value="Caja chica" />
+        </div>
+        <div class="form-group">
+          <label>Proyecto</label>
+          <input type="text" id="gas_proyecto" value="ventas" />
+        </div>
+        <div class="form-group" style="justify-content: flex-end;">
+          <button type="submit" class="success" id="btnGuardarGas">➕ Registrar Gasto</button>
+          <button type="button" class="secondary" id="btnCancelarGas" style="display:none" onclick="cancelarEdicion('gas')">✕ Cancelar</button>
+        </div>
+      </form>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Responsable</th>
+              <th>Descripción</th>
+              <th>Cuenta</th>
+              <th>Proyecto</th>
+              <th>Comprobante</th>
+              <th>Folio</th>
+              <th class="num">Neto ($)</th>
+              <th class="num">IVA ($)</th>
+              <th class="num">Total Bruto ($)</th>
+              <th class="no-print">Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tablaGastos"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 3. MÓDULO ALMACÉN -->
+    <section id="mod-almacen" class="module-section">
+      <div class="section-header">
+        <h2>📦 Catálogo de Almacén y Precios Unitarios</h2>
+        <div class="toolbar-actions no-print">
+          <button class="secondary" onclick="ordenarAlmacen('pos')">Ordenar por Posición</button>
+          <button class="secondary" onclick="ordenarAlmacen('mercancia')">Ordenar por Mercancía</button>
+          <button class="secondary" onclick="ordenarAlmacen('proveedor')">Ordenar por Proveedor</button>
+        </div>
+      </div>
+
+      <form class="form-grid no-print" id="formAlmacen" onsubmit="guardarAlmacen(event)">
+        <div class="form-group">
+          <label>Código / Posición</label>
+          <input type="number" step="0.1" id="alm_pos" required />
+        </div>
+        <div class="form-group">
+          <label>Mercancía / Descripción</label>
+          <input type="text" id="alm_mercancia" required />
+        </div>
+        <div class="form-group">
+          <label>Precio de Venta ($)</label>
+          <input type="number" step="0.01" id="alm_vk" required />
+        </div>
+        <div class="form-group">
+          <label>Margen (%)</label>
+          <input type="number" step="0.1" id="alm_margen" value="15" />
+        </div>
+        <div class="form-group">
+          <label>Proveedor / Responsable</label>
+          <input type="text" id="alm_prov" value="Rittal / WAGO" />
+        </div>
+        <div class="form-group" style="justify-content: flex-end;">
+          <button type="submit" class="success" id="btnGuardarAlm">➕ Agregar Artículo</button>
+          <button type="button" class="secondary" id="btnCancelarAlm" style="display:none" onclick="cancelarEdicion('alm')">✕ Cancelar</button>
+        </div>
+      </form>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Posición</th>
+              <th>Mercancía / Descripción Técnica</th>
+              <th>Proveedor</th>
+              <th class="num">Margen (%)</th>
+              <th class="num">Precio Venta ($)</th>
+              <th class="no-print">Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tablaAlmacen"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 4. MÓDULO CLIENTES -->
+    <section id="mod-clientes" class="module-section">
+      <div class="section-header">
+        <h2>🏢 Directorio de Clientes y Contactos</h2>
+      </div>
+
+      <form class="form-grid no-print" id="formCliente" onsubmit="guardarCliente(event)">
+        <div class="form-group">
+          <label>Compañía</label>
+          <input type="text" id="cli_compania" required />
+        </div>
+        <div class="form-group">
+          <label>Sinónimo / Corto</label>
+          <input type="text" id="cli_sinonimo" required />
+        </div>
+        <div class="form-group">
+          <label>Forma Fiscal</label>
+          <input type="text" id="cli_fiscal" value="S.A. de C.V." />
+        </div>
+        <div class="form-group">
+          <label>RFC</label>
+          <input type="text" id="cli_rfc" />
+        </div>
+        <div class="form-group">
+          <label>Calle y Número</label>
+          <input type="text" id="cli_calle" />
+        </div>
+        <div class="form-group">
+          <label>Ciudad y Estado</label>
+          <input type="text" id="cli_ciudad" value="Monterrey, Nuevo León" />
+        </div>
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input type="text" id="cli_tel" />
+        </div>
+        <div class="form-group">
+          <label>Contacto Principal</label>
+          <input type="text" id="cli_contacto" />
+        </div>
+        <div class="form-group">
+          <label>Correo Electrónico</label>
+          <input type="email" id="cli_correo" />
+        </div>
+        <div class="form-group" style="justify-content: flex-end;">
+          <button type="submit" class="success" id="btnGuardarCli">➕ Agregar Cliente</button>
+          <button type="button" class="secondary" id="btnCancelarCli" style="display:none" onclick="cancelarEdicion('cli')">✕ Cancelar</button>
+        </div>
+      </form>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Compañía</th>
+              <th>Sinónimo</th>
+              <th>RFC</th>
+              <th>Dirección</th>
+              <th>Ciudad / Estado</th>
+              <th>Teléfono</th>
+              <th>Contacto</th>
+              <th>Correo</th>
+              <th class="no-print">Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tablaClientes"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 5. MÓDULO PROVEEDORES -->
+    <section id="mod-proveedores" class="module-section">
+      <div class="section-header">
+        <h2>🚚 Padrón de Proveedores</h2>
+      </div>
+
+      <form class="form-grid no-print" id="formProveedor" onsubmit="guardarProveedor(event)">
+        <div class="form-group">
+          <label>Compañía Proveedora</label>
+          <input type="text" id="prov_compania" required />
+        </div>
+        <div class="form-group">
+          <label>Sinónimo</label>
+          <input type="text" id="prov_sinonimo" required />
+        </div>
+        <div class="form-group">
+          <label>RFC</label>
+          <input type="text" id="prov_rfc" />
+        </div>
+        <div class="form-group">
+          <label>Ciudad / Estado</label>
+          <input type="text" id="prov_ciudad" value="Monterrey, Nuevo León" />
+        </div>
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input type="text" id="prov_tel" />
+        </div>
+        <div class="form-group">
+          <label>Ejecutivo de Contacto</label>
+          <input type="text" id="prov_contacto" />
+        </div>
+        <div class="form-group">
+          <label>Correo</label>
+          <input type="email" id="prov_correo" />
+        </div>
+        <div class="form-group">
+          <label>Banco / Cuenta</label>
+          <input type="text" id="prov_banco" />
+        </div>
+        <div class="form-group" style="justify-content: flex-end;">
+          <button type="submit" class="success" id="btnGuardarProv">➕ Agregar Proveedor</button>
+          <button type="button" class="secondary" id="btnCancelarProv" style="display:none" onclick="cancelarEdicion('prov')">✕ Cancelar</button>
+        </div>
+      </form>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Compañía</th>
+              <th>Sinónimo</th>
+              <th>RFC</th>
+              <th>Dirección</th>
+              <th>Ciudad</th>
+              <th>Teléfono</th>
+              <th>Contacto</th>
+              <th>Correo</th>
+              <th>Banco / Cuenta</th>
+              <th class="no-print">Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tablaProveedores"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 6. MÓDULO EMPLEADOS -->
+    <section id="mod-empleados" class="module-section">
+      <div class="section-header">
+        <h2>👥 Plantilla de Personal (Empleados)</h2>
+      </div>
+
+      <form class="form-grid no-print" id="formEmpleado" onsubmit="guardarEmpleado(event)">
+        <div class="form-group"><label>No. Personal</label><input type="number" id="emp_no" min="1" /></div>
+        <div class="form-group"><label>Título</label><input type="text" id="emp_titulo" placeholder="Ing., Lic., C." /></div>
+        <div class="form-group"><label>Nombre Completo</label><input type="text" id="emp_nombre" required /></div>
+        <div class="form-group"><label>Departamento</label><input type="text" id="emp_depto" /></div>
+        <div class="form-group"><label>Puesto</label><input type="text" id="emp_puesto" /></div>
+        <div class="form-group"><label>RFC</label><input type="text" id="emp_rfc" /></div>
+        <div class="form-group"><label>CURP</label><input type="text" id="emp_curp" /></div>
+        <div class="form-group"><label>Dirección</label><input type="text" id="emp_dir" /></div>
+        <div class="form-group"><label>Celular</label><input type="text" id="emp_cel" /></div>
+        <div class="form-group"><label>Correo</label><input type="email" id="emp_correo" /></div>
+        <div class="form-group"><label>Banco / Pago</label><input type="text" id="emp_banco" placeholder="BBVA (Quincenal)" /></div>
+        <div class="form-group" style="justify-content: flex-end; flex-direction:row; gap:8px; align-items:flex-end;">
+          <button type="submit" class="success" id="btnGuardarEmp">➕ Agregar Empleado</button>
+          <button type="button" class="secondary" id="btnCancelarEmp" style="display:none" onclick="cancelarEdicionEmpleado()">✕ Cancelar</button>
+        </div>
+      </form>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>No. Personal</th>
+              <th>Título</th>
+              <th>Nombre Completo</th>
+              <th>Departamento</th>
+              <th>Puesto</th>
+              <th>RFC</th>
+              <th>CURP</th>
+              <th>Dirección</th>
+              <th>Celular</th>
+              <th>Correo</th>
+              <th>Banco / Pago</th>
+              <th class="no-print">Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tablaEmpleados"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 7. MÓDULO CUENTAS BANCARIAS -->
+    <section id="mod-cuentas" class="module-section">
+      <div class="section-header">
+        <h2>🏦 Cuentas Bancarias (Cuenta · Banco · Cliente)</h2>
+        <div class="toolbar-actions no-print">
+          <input type="text" id="buscarCuenta" placeholder="Buscar titular, banco o cuenta..." oninput="renderCuentas()" />
+          <select id="filtroTipoCuenta" onchange="renderCuentas()">
+            <option value="">Todos los titulares</option>
+            <option>Empleado</option><option>Cliente</option><option>Proveedor</option><option>Otro</option>
+          </select>
+          <button class="secondary" onclick="importarCuentasDesdeTextos(true)" title="Lee los campos 'Banco / Pago' de Empleados y 'Banco / Cuenta' de Proveedores y crea las cuentas que falten">📥 Importar desde Empleados/Proveedores</button>
+        </div>
+      </div>
+      <form class="form-grid no-print" id="formCuenta" onsubmit="guardarCuenta(event)">
+        <div class="form-group"><label>Tipo de titular</label>
+          <select id="cta_tipo" onchange="actualizarListaTitulares()"><option>Empleado</option><option>Cliente</option><option>Proveedor</option><option>Otro</option></select></div>
+        <div class="form-group"><label>Titular / Beneficiario</label>
+          <input type="text" id="cta_titular" list="listaTitulares" required autocomplete="off" /><datalist id="listaTitulares"></datalist></div>
+        <div class="form-group"><label>Banco</label><input type="text" id="cta_banco" placeholder="BBVA, Banamex, BanRegio..." /></div>
+        <div class="form-group"><label>No. de Cuenta</label><input type="text" id="cta_cuenta" inputmode="numeric" /></div>
+        <div class="form-group"><label>Cliente (No. de cliente / CLABE)</label><input type="text" id="cta_cliente" inputmode="numeric" /></div>
+        <div class="form-group"><label>Notas</label><input type="text" id="cta_notas" placeholder="Quincenal, pago de facturas..." /></div>
+        <div class="form-group" style="justify-content: flex-end; flex-direction:row; gap:8px; align-items:flex-end;">
+          <button type="submit" class="success" id="btnGuardarCta">➕ Agregar Cuenta</button>
+          <button type="button" class="secondary" id="btnCancelarCta" style="display:none" onclick="cancelarEdicion('cta')">✕ Cancelar</button>
+        </div>
+      </form>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>Tipo</th><th>Titular</th><th>Banco</th><th>No. de Cuenta</th><th>Cliente / CLABE</th><th>Notas</th><th class="no-print">Acción</th></tr></thead>
+          <tbody id="tablaCuentas"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="modal-bg no-print" id="empresaModal" onclick="if(event.target===this)cerrarEmpresaModal()">
+    <div class="modal-box">
+      <h3>🏢 Personalizar empresa</h3>
+      <div class="form-group">
+        <label>Logotipo (PNG, JPG, SVG o WebP)</label>
+        <div class="logo-box">
+          <div class="logo-prev" id="empLogoPrev">Sin logo</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <label class="btn-label">📁 Cargar logo<input type="file" id="empLogoInput" accept="image/*" style="display:none" onchange="cargarLogoEmpresa(event)" /></label>
+            <button type="button" class="secondary" onclick="quitarLogoEmpresa()">Quitar logo</button>
+          </div>
+        </div>
+      </div>
+      <div class="form-group"><label>Nombre de la empresa</label><input type="text" id="empNombreIn" maxlength="120" placeholder="Ej. Energy México S.A. de C.V." /></div>
+      <div class="form-group"><label>RFC (opcional)</label><input type="text" id="empRfcIn" maxlength="30" /></div>
+      <div class="form-group"><label>Dirección (opcional)</label><input type="text" id="empDirIn" maxlength="200" /></div>
+      <div class="form-group"><label>Teléfono / Correo (opcional)</label><input type="text" id="empContactoIn" maxlength="120" /></div>
+      <div class="modal-actions">
+        <button type="button" class="secondary" onclick="cerrarEmpresaModal()">Cancelar</button>
+        <button type="button" class="success" onclick="guardarEmpresa()">💾 Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-bg no-print" id="pickerModal" onclick="if(event.target===this)cerrarSelector()">
+    <div class="modal-box wide">
+      <h3 id="pkTitulo"></h3>
+      <div class="pk-ctx" id="pkCtx" style="display:none">
+        <div><label for="pk_num">No. Cotización</label><input type="number" id="pk_num" min="1" onchange="pkCambio('num')" /></div>
+        <div><label for="pk_cliente">Cliente (Clientes y Contactos)</label>
+          <div class="cli-line">
+            <select id="pk_cliente" onchange="pkCambio('cliente')"></select>
+            <button type="button" class="secondary" onclick="irANuevoCliente()" title="Registrar un cliente nuevo">➕</button>
+          </div></div>
+        <div><label for="pk_titulo">Título del Proyecto</label><input type="text" id="pk_titulo" oninput="pkCambio('titulo')" placeholder="Proyecto / Tablero..." /></div>
+      </div>
+      <div class="pk-bar">
+        <input type="text" id="pkBuscar" placeholder="Buscar..." oninput="renderSelector()" autocomplete="off" />
+        <button type="button" class="secondary" onclick="cerrarSelector()">✕ Cerrar</button>
+      </div>
+      <div class="pk-status" id="pkStatus"></div>
+      <div class="pk-wrap"><table><thead id="pkHead"></thead><tbody id="pkBody"></tbody></table></div>
+    </div>
+  </div>
+
+  <div id="previewOverlay">
+    <div class="pv-bar">
+      <strong>👁️ Vista previa de impresión</strong>
+      <label style="color:#cbd5e1;font-size:.85em">Hoja:
+        <select id="pvOrient" onchange="aplicarOrientacion()"><option value="landscape">Horizontal</option><option value="portrait">Vertical</option></select>
+      </label>
+      <button class="success" onclick="window.print()">🖨️ Imprimir / PDF</button>
+      <button class="secondary" onclick="cerrarVistaPrevia()">✕ Cerrar</button>
+    </div>
+    <div class="pv-scroll"><div id="previewPaper"></div></div>
+  </div>
+
+  <script>
+    // BASE DE DATOS INICIAL RECUPERADA ÍNTEGRAMENTE DE Administracion2.accdb
+    const DATOS_INICIALES = {
+      clientes: [
+        { id: 0, compania: "Cálculo Interno", sinonimo: "INTERN", fiscal: "-", rfc: "-", calle: "-", ciudad: "Monterrey, N.L.", tel: "-", contacto: "Ing. Fred Schiefelbein", correo: "fred@energy-mex.com" },
+        { id: 1, compania: "Bombas y Equipamientos Eléctricos Industriales", sinonimo: "BEEISA", fiscal: "S.A. de C.V.", rfc: "BEE950429JB0", calle: "Gral. Francisco Naranjo 204 Sur, Col. Centro, CP 66600", ciudad: "Apodaca, Nuevo León", tel: "81 8371 7567", contacto: "Ing. Humberto Gámez Garza (Director)", correo: "h.gamezg@beeisa.com" },
+        { id: 2, compania: "MUSEO DE HISTORIA MEXICANA", sinonimo: "MHM", fiscal: "A.C.", rfc: "-", calle: "Diego de Montemayor 444 Sur, Col. Centro, CP 64000", ciudad: "Monterrey, Nuevo León", tel: "81 2033 9898", contacto: "Administración MHM", correo: "-" }
+      ],
+      proveedores: [
+        { id: 1, compania: "SHAGA Automation", sinonimo: "SHAGA", rfc: "SAU 120208C50", direccion: "Cristal de Murano 101, Col. Valles de Cristal, CP 64990", ciudad: "Monterrey, Nuevo León", tel: "81 2166 8017", contacto: "Hilario Aguirre (81 1301 4032)", correo: "haguirre@shaga.com.mx", banco: "-" },
+        { id: 2, compania: "IFM Efector S. de R.L. de C.V.", sinonimo: "IFM", rfc: "IEF 0301023F0", direccion: "Ave. Arq. Pedro Ramírez Vázquez #200, Valle Ote., CP 66269", ciudad: "San Pedro Garza García, N.L.", tel: "81 8040 3535", contacto: "Carlos Pérez Maya (81 1542 0343)", correo: "creditos.mx@ifm.com", banco: "BBVA / 0101 263 676" },
+        { id: 3, compania: "Bombas y Equipamientos Eléctricos Industriales", sinonimo: "BEEISA", rfc: "BEE950429JB0", direccion: "Gral. Francisco Naranjo 204 Sur, Centro, CP 66600", ciudad: "Apodaca, Nuevo León", tel: "81 8371 7567", contacto: "Ing. Humberto Gámez Garza", correo: "h.gamezg@beeisa.com", banco: "-" }
+      ],
+      empleados: [
+        { pers_no: 1, titulo: "Ing.", nombre: "Fred Paul Schiefelbein", depto: "Gerencia", puesto: "Director", rfc: "SIFR-580621-7J9", curp: "SIXF 580621 HNECXR03", direccion: "Carlos Villarreal 302, Col. Lázaro Cárdenas 2. Sector, Cadereyta, N.L., CP 67483", celular: "828 120 1741", correo: "fred@energy-mex.com", banco: "BBVA Bancomer (Quincenal)" }
+      ],
+      almacen: [
+        { pos: 1.0, mercancia: "Diseño, ingeniería y documentación para control y tablero 1. FlexRake", proveedor: "Fred", margen: 20, vk: 2000.00 },
+        { pos: 2.0, mercancia: "Puesta en marcha, excluyendo viaje, alimentos y hospedaje (cuenta según comprobante)", proveedor: "Fred", margen: 20, vk: 800.00 },
+        { pos: 10.1, mercancia: "Gabinete autosoportado Rittal TS8 / Acero inoxidable / Acero al carbón", proveedor: "Rittal", margen: 15, vk: 1850.00 },
+        { pos: 12.1, mercancia: "Lámpara LED para tablero marca Rittal 2500 200", proveedor: "Rittal", margen: 11, vk: 292.00 },
+        { pos: 14.1, mercancia: "Kit de ventilador para tablero marca Rittal SK 3240.124 + 3240200 (Filtro de salida)", proveedor: "Rittal", margen: 15, vk: 410.00 },
+        { pos: 32.1, mercancia: "Fuente de alimentación 24 VDC con fusible WAGO 750-610", proveedor: "WAGO", margen: 10, vk: 66.00 }
+      ],
+      cotizaciones: [
+        { cotiz: 1001, fecha: "2023-07-14", cliente: 0, titulo: "DULCES NOMBRES (AGUA Y DRENAJE MTY) - 2 FlexRake - instalación interior / tablero inoxidable - sin aire acondicionado", pos: 1, cant: 1, art: "lote", alm_pos: 1.0, oferta: "Diseño, ingeniería y documentación para control y tablero 1. FlexRake", ek: 1666.67, margen: 20.0, pu: 2000.00, moneda: "USD", cambio: 17.0, nota: "Opcionalmente ofrecemos el servicio de puesta en marcha, con un costo de 800 USD por día. Más gastos de viaje, alimentos y hospedaje." },
+        { cotiz: 1001, fecha: "2023-07-14", cliente: 0, titulo: "DULCES NOMBRES (AGUA Y DRENAJE MTY) - 2 FlexRake - instalación interior / tablero inoxidable - sin aire acondicionado", pos: 10, cant: 2, art: "pza.", alm_pos: 10.1, oferta: "Gabinete autosoportado acero inoxidable para control de 2 FlexRake", ek: 13800.00, margen: 15.0, pu: 15224.75, moneda: "USD", cambio: 17.0, nota: "Opcionalmente ofrecemos el servicio de puesta en marcha, con un costo de 800 USD por día. Más gastos de viaje, alimentos y hospedaje." },
+        { cotiz: 1001, fecha: "2023-07-14", cliente: 0, titulo: "DULCES NOMBRES (AGUA Y DRENAJE MTY) - 2 FlexRake - instalación interior / tablero inoxidable - sin aire acondicionado", pos: 17, cant: 1, art: "pza.", alm_pos: 32.1, oferta: "Fuente de alimentación 24 VDC con fusible WAGO 750-610", ek: 59.40, margen: 10.0, pu: 66.00, moneda: "USD", cambio: 17.0, nota: "Opcionalmente ofrecemos el servicio de puesta en marcha, con un costo de 800 USD por día. Más gastos de viaje, alimentos y hospedaje." },
+        { cotiz: 1002, fecha: "2023-07-14", cliente: 1, titulo: "DULCES NOMBRES (AGUA Y DRENAJE MTY) - 2 FlexRake - instalación interior / tablero acero negro - sin aire acondicionado", pos: 1, cant: 1, art: "lote", alm_pos: 1.0, oferta: "Diseño, ingeniería y documentación para control y tablero 1. FlexRake", ek: 1666.67, margen: 20.0, pu: 2000.00, moneda: "USD", cambio: 17.0, nota: "Opcionalmente ofrecemos el servicio de puesta en marcha, con un costo de 800 USD por día. Más gastos de viaje, alimentos y hospedaje." },
+        { cotiz: 1002, fecha: "2023-07-14", cliente: 1, titulo: "DULCES NOMBRES (AGUA Y DRENAJE MTY) - 2 FlexRake - instalación interior / tablero acero negro - sin aire acondicionado", pos: 10, cant: 1, art: "pza.", alm_pos: 12.1, oferta: "Lámpara LED para tablero marca Rittal 2500 200", ek: 259.88, margen: 11.0, pu: 292.00, moneda: "USD", cambio: 17.0, nota: "Opcionalmente ofrecemos el servicio de puesta en marcha, con un costo de 800 USD por día. Más gastos de viaje, alimentos y hospedaje." },
+        { cotiz: 1002, fecha: "2023-07-14", cliente: 1, titulo: "DULCES NOMBRES (AGUA Y DRENAJE MTY) - 2 FlexRake - instalación interior / tablero acero negro - sin aire acondicionado", pos: 15, cant: 2, art: "pza.", alm_pos: 14.1, oferta: "Tablero de control en acero negro Rittal + Kit de ventilador SK 3240.124 + Filtro 3240200", ek: 12650.00, margen: 14.3, pu: 14466.25, moneda: "USD", cambio: 17.0, nota: "Opcionalmente ofrecemos el servicio de puesta en marcha, con un costo de 800 USD por día. Más gastos de viaje, alimentos y hospedaje." }
+      ],
+      gastos: [
+        { fecha: "2023-07-14", gastor: "Fred", descripcion: "Comida de negocios con cliente proyecto AyD", cuenta: "Caja chica", proyecto: "ventas", tipo: "Fact", folio: "5516", neto: 200.43, iva: 32.07, bruto: 232.50 },
+        { fecha: "2023-07-15", gastor: "Fred", descripcion: "Material eléctrico conectores y clemas WAGO", cuenta: "Banco BBVA", proyecto: "FlexRake", tipo: "Fact", folio: "A-8921", neto: 4850.00, iva: 776.00, bruto: 5626.00 },
+        { fecha: "2023-07-18", gastor: "Fred", descripcion: "Casetas y combustible traslado planta Dulces Nombres", cuenta: "Caja chica", proyecto: "FlexRake", tipo: "Nota", folio: "N-104", neto: 650.00, iva: 0.00, bruto: 650.00 },
+        { fecha: "2023-07-20", gastor: "Fred", descripcion: "Suministro lámparas LED y filtros Rittal", cuenta: "Banco BBVA", proyecto: "FlexRake", tipo: "Fact", folio: "F-3310", neto: 6200.00, iva: 992.00, bruto: 7192.00 }
+      ]
+    };
+
+    const STORAGE_KEY = "ERP_ADMINISTRACION_ES_V1";
+    let estado = cargarEstado();
+    let moduloActivoId = "mod-cotizaciones";
+    let tamanoFuente = 14;
+
+    function cargarEstado() {
+      const guardado = localStorage.getItem(STORAGE_KEY);
+      if (guardado) {
+        try { return JSON.parse(guardado); } catch (e) {}
+      }
+      return JSON.parse(JSON.stringify(DATOS_INICIALES));
+    }
+
+    function guardarEstado() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(estado));
+      actualizarKPIs();
+    }
+
+    function formatoMoneda(valor) {
+      return "$" + (Number(valor) || 0).toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    // ACTUALIZAR KPIs EN FILA ÚNICA
+    function actualizarKPIs() {
+      const totalCotizado = estado.cotizaciones.reduce((acc, c) => acc + (Number(c.cant) * Number(c.pu)), 0);
+      const totalCostoCotiz = estado.cotizaciones.reduce((acc, c) => acc + (Number(c.cant) * Number(c.ek)), 0);
+      const totalGastos = estado.gastos.reduce((acc, g) => acc + Number(g.bruto), 0);
+      const totalIVA = estado.gastos.reduce((acc, g) => acc + Number(g.iva), 0);
+      const utilidad = totalCotizado - totalCostoCotiz - totalGastos;
+      const margenProm = estado.cotizaciones.length
+        ? estado.cotizaciones.reduce((acc, c) => acc + Number(c.margen), 0) / estado.cotizaciones.length
+        : 0;
+
+      document.getElementById("kpiCotizado").textContent = formatoMoneda(totalCotizado);
+      document.getElementById("kpiGastos").textContent = formatoMoneda(totalGastos);
+      document.getElementById("kpiUtilidad").textContent = formatoMoneda(utilidad);
+      document.getElementById("kpiMargen").textContent = margenProm.toFixed(1) + "%";
+      document.getElementById("kpiIVA").textContent = formatoMoneda(totalIVA);
+      document.getElementById("kpiRegistros").textContent =
+        `${estado.almacen.length} / ${estado.clientes.length} / ${estado.proveedores.length}`;
+    }
+
+    // NAVEGACIÓN DE PESTAÑAS
+    function abrirModulo(id, btn) {
+      moduloActivoId = id;
+      document.querySelectorAll(".module-section").forEach(s => s.classList.remove("active"));
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+      if (btn) btn.classList.add("active");
+    }
+
+    // RENDERIZAR COTIZACIONES
+    function poblarSelectoresCotiz() {
+      const selFiltro = document.getElementById("filtroCotiz");
+      const valorActual = selFiltro.value;
+      const numeros = [...new Set(estado.cotizaciones.map(c => c.cotiz))].sort((a, b) => b - a);
+      selFiltro.innerHTML = `<option value="">Todas las cotizaciones</option>` +
+        numeros.map(n => `<option value="${n}">Cotización #${n}</option>`).join("");
+      selFiltro.value = valorActual;
+
+      const selCli = document.getElementById("cot_cliente");
+      selCli.innerHTML = estado.clientes.map(cl =>
+        `<option value="${cl.id}">${cl.id} - ${cl.sinonimo} (${cl.compania})</option>`
+      ).join("");
+    }
+
+    function recalcularFormCotiz() {
+      const ek = parseFloat(document.getElementById("cot_ek").value) || 0;
+      const margen = parseFloat(document.getElementById("cot_margen").value) || 0;
+      const pu = ek * (1 + margen / 100);
+      document.getElementById("cot_pu").value = pu.toFixed(2);
+    }
+
+    function renderCotizaciones() {
+      poblarSelectoresCotiz();
+      const filtro = document.getElementById("filtroCotiz").value;
+      const lista = estado.cotizaciones
+        .map((item, idx) => ({ ...item, idx }))
+        .filter(item => !filtro || String(item.cotiz) === String(filtro))
+        .sort((a, b) => a.cotiz - b.cotiz || a.pos - b.pos);
+
+      const tbody = document.getElementById("tablaCotizaciones");
+      let sumaNeto = 0;
+
+      tbody.innerHTML = lista.map(c => {
+        const subtotal = Number(c.cant) * Number(c.pu);
+        sumaNeto += subtotal;
+        return `
+          <tr>
+            <td><strong>#${c.cotiz}</strong></td>
+            <td>${c.fecha}</td>
+            <td>${c.pos}</td>
+            <td class="num">${c.cant}</td>
+            <td>${c.art}</td>
+            <td>${c.alm_pos || "-"}</td>
+            <td>${c.oferta}</td>
+            <td class="num">${formatoMoneda(c.ek)}</td>
+            <td class="num">${Number(c.margen).toFixed(1)}%</td>
+            <td class="num">${formatoMoneda(c.pu)}</td>
+            <td class="num"><strong>${formatoMoneda(subtotal)}</strong></td>
+            <td class="no-print"><div class="row-actions">
+              <button class="warning" title="Editar" onclick="editarCotizacion(${c.idx})">✎</button>
+              <button class="danger" title="Eliminar" onclick="eliminarItem('cotizaciones', ${c.idx})">✕</button>
+            </div></td>
+          </tr>
+        `;
+      }).join("");
+
+      const iva = sumaNeto * 0.16;
+      const totalBruto = sumaNeto + iva;
+      const cab = lista[0] || {};
+      const clienteObj = estado.clientes.find(cl => Number(cl.id) === Number(cab.cliente)) || {};
+
+      document.getElementById("resumenCotizacionActiva").innerHTML = `
+        <div style="display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px;">
+          <div>
+            <strong>Proyecto:</strong> ${cab.titulo || "Vista General de Cotizaciones"}<br/>
+            <strong>Cliente:</strong> ${clienteObj.compania || "Varios"} (${clienteObj.sinonimo || "-"}) | <strong>Atención:</strong> ${clienteObj.contacto || "-"}<br/>
+            <small>${cab.nota || ""}</small>
+          </div>
+          <div style="text-align:right; min-width:220px;">
+            <div>Subtotal Neto: <strong>${formatoMoneda(sumaNeto)} USD</strong></div>
+            <div>IVA (16%): <strong>${formatoMoneda(iva)} USD</strong></div>
+            <div style="font-size:1.15em; color:var(--primary);">Total Bruto: <strong>${formatoMoneda(totalBruto)} USD</strong></div>
+          </div>
+        </div>
+      `;
+    }
+
+    function agregarPosicionCotizacion(e) {
+      e.preventDefault();
+      estado.cotizaciones.push({
+        cotiz: Number(document.getElementById("cot_num").value),
+        fecha: document.getElementById("cot_fecha").value,
+        cliente: Number(document.getElementById("cot_cliente").value),
+        titulo: document.getElementById("cot_titulo").value,
+        pos: Number(document.getElementById("cot_pos").value),
+        cant: Number(document.getElementById("cot_cant").value),
+        art: document.getElementById("cot_art").value,
+        alm_pos: 1.0,
+        oferta: document.getElementById("cot_oferta").value,
+        ek: Number(document.getElementById("cot_ek").value),
+        margen: Number(document.getElementById("cot_margen").value),
+        pu: Number(document.getElementById("cot_pu").value),
+        moneda: "USD",
+        cambio: 17.0,
+        nota: "Opcionalmente ofrecemos el servicio de puesta en marcha, con un costo de 800 USD por día."
+      });
+      guardarEstado();
+      renderCotizaciones();
+      e.target.reset();
+    }
+
+    // RENDERIZAR GASTOS
+    function calcularFormGasto() {
+      const neto = parseFloat(document.getElementById("gas_neto").value) || 0;
+      let porc = parseFloat(document.getElementById("gas_ivaporc").value) || 0;
+      if (porc > 1) porc = porc / 100;
+      const iva = neto * porc;
+      document.getElementById("gas_ivacant").value = iva.toFixed(2);
+      document.getElementById("gas_bruto").value = (neto + iva).toFixed(2);
+    }
+
+    function renderGastos() {
+      const q = (document.getElementById("buscarGasto").value || "").toLowerCase();
+      const fg = document.getElementById("filtroGastor").value;
+      const fp = document.getElementById("filtroProyectoGasto").value;
+
+      // Actualizar filtros dinámicos
+      const gastores = [...new Set(estado.gastos.map(g => g.gastor))];
+      const proyectos = [...new Set(estado.gastos.map(g => g.proyecto))];
+      document.getElementById("filtroGastor").innerHTML = `<option value="">Todos los Responsables</option>` +
+        gastores.map(x => `<option value="${x}" ${x === fg ? "selected" : ""}>${x}</option>`).join("");
+      document.getElementById("filtroProyectoGasto").innerHTML = `<option value="">Todos los Proyectos</option>` +
+        proyectos.map(x => `<option value="${x}" ${x === fp ? "selected" : ""}>${x}</option>`).join("");
+
+      const filtrados = estado.gastos
+        .map((g, idx) => ({ ...g, idx }))
+        .filter(g => {
+          const coincideTexto = !q || `${g.descripcion} ${g.cuenta} ${g.gastor} ${g.folio}`.toLowerCase().includes(q);
+          const coincideGastor = !fg || g.gastor === fg;
+          const coincideProy = !fp || g.proyecto === fp;
+          return coincideTexto && coincideGastor && coincideProy;
+        });
+
+      document.getElementById("tablaGastos").innerHTML = filtrados.map(g => `
+        <tr>
+          <td>${g.fecha}</td>
+          <td>${g.gastor}</td>
+          <td>${g.descripcion}</td>
+          <td>${g.cuenta}</td>
+          <td><span class="badge">${g.proyecto}</span></td>
+          <td>${g.tipo === "Fact" ? "Factura (Hacienda)" : "Nota / Justificado"}</td>
+          <td>${g.folio || "-"}</td>
+          <td class="num">${formatoMoneda(g.neto)}</td>
+          <td class="num">${formatoMoneda(g.iva)}</td>
+          <td class="num"><strong>${formatoMoneda(g.bruto)}</strong></td>
+          <td class="no-print"><div class="row-actions">
+            <button class="warning" title="Editar" onclick="editarGasto(${g.idx})">✎</button>
+            <button class="danger" title="Eliminar" onclick="eliminarItem('gastos', ${g.idx})">✕</button>
+          </div></td>
+        </tr>
+      `).join("");
+    }
+
+    function agregarGasto(e) {
+      e.preventDefault();
+      estado.gastos.unshift({
+        fecha: document.getElementById("gas_fecha").value,
+        gastor: document.getElementById("gas_gastor").value,
+        descripcion: document.getElementById("gas_desc").value,
+        neto: Number(document.getElementById("gas_neto").value),
+        iva: Number(document.getElementById("gas_ivacant").value),
+        bruto: Number(document.getElementById("gas_bruto").value),
+        tipo: document.getElementById("gas_tipo").value,
+        folio: document.getElementById("gas_docno").value,
+        cuenta: document.getElementById("gas_cuenta").value,
+        proyecto: document.getElementById("gas_proyecto").value
+      });
+      guardarEstado();
+      renderGastos();
+      e.target.reset();
+    }
+
+    // RENDERIZAR ALMACÉN
+    function ordenarAlmacen(criterio) {
+      if (criterio === "pos") estado.almacen.sort((a, b) => a.pos - b.pos);
+      if (criterio === "mercancia") estado.almacen.sort((a, b) => a.mercancia.localeCompare(b.mercancia));
+      if (criterio === "proveedor") estado.almacen.sort((a, b) => (a.proveedor || "").localeCompare(b.proveedor || ""));
+      renderAlmacen();
+    }
+
+    function renderAlmacen() {
+      document.getElementById("tablaAlmacen").innerHTML = estado.almacen.map((a, idx) => `
+        <tr>
+          <td><strong>${a.pos}</strong></td>
+          <td>${a.mercancia}</td>
+          <td>${a.proveedor || "-"}</td>
+          <td class="num">${Number(a.margen || 0).toFixed(1)}%</td>
+          <td class="num"><strong>${formatoMoneda(a.vk)}</strong></td>
+          <td class="no-print"><div class="row-actions">
+            <button class="warning" title="Editar" onclick="editarAlmacen(${idx})">✎</button>
+            <button class="danger" title="Eliminar" onclick="eliminarItem('almacen', ${idx})">✕</button>
+          </div></td>
+        </tr>
+      `).join("");
+    }
+
+    function agregarAlmacen(e) {
+      e.preventDefault();
+      estado.almacen.push({
+        pos: Number(document.getElementById("alm_pos").value),
+        mercancia: document.getElementById("alm_mercancia").value,
+        vk: Number(document.getElementById("alm_vk").value),
+        margen: Number(document.getElementById("alm_margen").value),
+        proveedor: document.getElementById("alm_prov").value
+      });
+      guardarEstado();
+      renderAlmacen();
+      e.target.reset();
+    }
+
+    // RENDERIZAR CLIENTES, PROVEEDORES Y EMPLEADOS
+    function renderCatalogos() {
+      document.getElementById("tablaClientes").innerHTML = estado.clientes.map((c, idx) => `
+        <tr>
+          <td>${c.id}</td>
+          <td><strong>${c.compania}</strong></td>
+          <td><span class="badge">${c.sinonimo}</span></td>
+          <td>${c.rfc}</td>
+          <td>${c.calle}</td>
+          <td>${c.ciudad}</td>
+          <td>${c.tel}</td>
+          <td>${c.contacto}</td>
+          <td>${c.correo}</td>
+          <td class="no-print"><div class="row-actions">
+            <button class="warning" title="Editar" onclick="editarCliente(${idx})">✎</button>
+            <button class="danger" title="Eliminar" onclick="eliminarItem('clientes', ${idx})">✕</button>
+          </div></td>
+        </tr>
+      `).join("");
+
+      document.getElementById("tablaProveedores").innerHTML = estado.proveedores.map((p, idx) => `
+        <tr>
+          <td>${p.id}</td>
+          <td><strong>${p.compania}</strong></td>
+          <td><span class="badge">${p.sinonimo}</span></td>
+          <td>${p.rfc}</td>
+          <td>${p.direccion}</td>
+          <td>${p.ciudad}</td>
+          <td>${p.tel}</td>
+          <td>${p.contacto}</td>
+          <td>${p.correo}</td>
+          <td>${p.banco}</td>
+          <td class="no-print"><div class="row-actions">
+            <button class="warning" title="Editar" onclick="editarProveedor(${idx})">✎</button>
+            <button class="danger" title="Eliminar" onclick="eliminarItem('proveedores', ${idx})">✕</button>
+          </div></td>
+        </tr>
+      `).join("");
+
+      document.getElementById("tablaEmpleados").innerHTML = estado.empleados.map((emp, idx) => `
+        <tr>
+          <td>${emp.pers_no}</td>
+          <td>${emp.titulo}</td>
+          <td><strong>${emp.nombre}</strong></td>
+          <td>${emp.depto}</td>
+          <td>${emp.puesto}</td>
+          <td>${emp.rfc}</td>
+          <td>${emp.curp}</td>
+          <td>${emp.direccion}</td>
+          <td>${emp.celular}</td>
+          <td>${emp.correo}</td>
+          <td>${emp.banco}</td>
+          <td class="no-print"><div class="row-actions">
+            <button class="warning" title="Editar" onclick="editarEmpleado(${idx})">✎</button>
+            <button class="danger" title="Eliminar" onclick="eliminarItem('empleados', ${idx})">✕</button>
+          </div></td>
+        </tr>
+      `).join("");
+    }
+
+    function agregarCliente(e) {
+      e.preventDefault();
+      const nuevoId = estado.clientes.length ? Math.max(...estado.clientes.map(c => c.id)) + 1 : 1;
+      estado.clientes.push({
+        id: nuevoId,
+        compania: document.getElementById("cli_compania").value,
+        sinonimo: document.getElementById("cli_sinonimo").value,
+        fiscal: document.getElementById("cli_fiscal").value,
+        rfc: document.getElementById("cli_rfc").value || "-",
+        calle: document.getElementById("cli_calle").value || "-",
+        ciudad: document.getElementById("cli_ciudad").value || "-",
+        tel: document.getElementById("cli_tel").value || "-",
+        contacto: document.getElementById("cli_contacto").value || "-",
+        correo: document.getElementById("cli_correo").value || "-"
+      });
+      guardarEstado();
+      renderCatalogos();
+      renderCotizaciones();
+      e.target.reset();
+    }
+
+    function agregarProveedor(e) {
+      e.preventDefault();
+      const nuevoId = estado.proveedores.length ? Math.max(...estado.proveedores.map(p => p.id)) + 1 : 1;
+      estado.proveedores.push({
+        id: nuevoId,
+        compania: document.getElementById("prov_compania").value,
+        sinonimo: document.getElementById("prov_sinonimo").value,
+        rfc: document.getElementById("prov_rfc").value || "-",
+        direccion: "-",
+        ciudad: document.getElementById("prov_ciudad").value || "-",
+        tel: document.getElementById("prov_tel").value || "-",
+        contacto: document.getElementById("prov_contacto").value || "-",
+        correo: document.getElementById("prov_correo").value || "-",
+        banco: document.getElementById("prov_banco").value || "-"
+      });
+      guardarEstado();
+      renderCatalogos();
+      e.target.reset();
+    }
+
+    function eliminarItem(coleccion, idx) {
+      estado[coleccion].splice(idx, 1);
+      guardarEstado();
+      renderTodo();
+    }
+
+    // UTILIDADES DE INTERFAZ Y ARCHIVOS
+    function cambiarFuente(delta) {
+      tamanoFuente = Math.min(20, Math.max(11, tamanoFuente + delta));
+      document.documentElement.style.setProperty("--base-font", tamanoFuente + "px");
+    }
+
+    function alternarModoOscuro() {
+      document.body.classList.toggle("dark-mode");
+    }
+
+    function descargarJSON() {
+      const blob = new Blob([JSON.stringify(estado, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "Respaldo_Administracion_ERP.json";
+      a.click();
+    }
+
+    function cargarJSON(event) {
+      const archivo = event.target.files[0];
+      if (!archivo) return;
+      const lector = new FileReader();
+      lector.onload = e => {
+        try {
+          estado = JSON.parse(e.target.result);
+          guardarEstado();
+          renderTodo();
+        } catch (err) {
+          alert("El archivo JSON no tiene un formato válido.");
+        }
+      };
+      lector.readAsText(archivo);
+    }
+
+    function exportarCSVActivo() {
+      const sec = document.getElementById(moduloActivoId);
+      const filas = [...sec.querySelectorAll("table tr")];
+      const csv = filas.map(tr =>
+        [...tr.querySelectorAll("th, td")]
+          .filter(celda => !celda.classList.contains("no-print"))
+          .map(celda => `"${celda.innerText.replace(/"/g, '""')}"`)
+          .join(",")
+      ).join("\n");
+
+      const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `${moduloActivoId}.csv`;
+      a.click();
+    }
+
+    function limpiarMemoria() {
+      if (confirm("¿Restablecer los datos originales extraídos de Administracion2.accdb?")) {
+        localStorage.removeItem(STORAGE_KEY);
+        estado = JSON.parse(JSON.stringify(DATOS_INICIALES));
+        renderTodo();
+      }
+    }
+
+    function renderTodo() {
+      asegurarDatos();
+      aplicarEmpresa();
+      actualizarKPIs();
+      renderCotizaciones();
+      renderGastos();
+      renderAlmacen();
+      renderCatalogos();
+      renderCuentas();
+      const te = document.getElementById("tabEmpleados");
+      if (te) te.textContent = "6. Empleados (" + String(estado.empleados.length).padStart(2, "0") + ")";
+      const tc = document.getElementById("tabCuentas");
+      if (tc) tc.textContent = "7. Cuentas Bancarias (" + String(estado.cuentas.length).padStart(2, "0") + ")";
+      actualizarListaTitulares();
+      actualizarListaAlmacen();
+      actualizarInfoCliente();
+      sincronizarControlMoneda();
+    }
+
+
+    // ===== DATOS BASE / EMPRESA / IDIOMA =====
+    const NOMBRE_DEFECTO = "⚙️ Sistema de Administración ERP (Español)";
+    const NORMALIZAR = [["Cálculo Interno (Interne Kalkulation)", "Cálculo Interno"], ["Opcional ofrecemos el servicio de puesta en servicio por el cual cobramos 800 $US / día.", "Opcionalmente ofrecemos el servicio de puesta en marcha, con un costo de 800 USD por día."], ["Fuente de alimentación Power Supply 24 VDC Fuse WAGO 750-610", "Fuente de alimentación 24 VDC con fusible WAGO 750-610"], ["Power Supply 24 VDC Fuse WAGO 750-610", "Fuente de alimentación 24 VDC con fusible WAGO 750-610"], ["Puesta en servicio, excluido viaje", "Puesta en marcha, excluyendo viaje"], ["instalación adentro", "instalación interior"], ["sin AC", "sin aire acondicionado"]];
+    let logoTemporal = "";
+    let cotizNueva = null;
+    let msgTimer = null;
+    const editando = { cli: -1, prov: -1, cta: -1, cot: -1, gas: -1, alm: -1 };
+
+    function escHTML(s) {
+      return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+    function normalizarTextos(o) {
+      let cambio = false;
+      const f = v => {
+        if (typeof v === "string") {
+          let t = v;
+          NORMALIZAR.forEach(p => { if (t.includes(p[0])) t = t.split(p[0]).join(p[1]); });
+          if (t !== v) cambio = true;
+          return t;
+        }
+        if (Array.isArray(v)) return v.map(f);
+        if (v && typeof v === "object") { Object.keys(v).forEach(k => { if (k !== "logo") v[k] = f(v[k]); }); return v; }
+        return v;
+      };
+      f(o);
+      return cambio;
+    }
+    function asegurarDatos() {
+      if (!estado.empresa || typeof estado.empresa !== "object") estado.empresa = { nombre: "", rfc: "", direccion: "", contacto: "", logo: "" };
+      ["empleados", "clientes", "proveedores", "cotizaciones", "gastos", "almacen"].forEach(k => { if (!Array.isArray(estado[k])) estado[k] = []; });
+      let guardar = false;
+      if (!estado.config || typeof estado.config !== "object") { estado.config = { moneda: "USD" }; guardar = true; }
+      if (estado.config.moneda !== "MXN") estado.config.moneda = "USD";
+      if ("tc" in estado.config) { delete estado.config.tc; guardar = true; }
+      estado.cotizaciones.forEach(c => { if ("cambio" in c) { delete c.cambio; guardar = true; } });
+      if (!Array.isArray(estado.cotGuardadas)) {
+        estado.cotGuardadas = [...new Set(estado.cotizaciones.map(c => Number(c.cotiz)))];
+        guardar = true;
+      }
+      if (!Array.isArray(estado.cuentas)) { estado.cuentas = []; importarCuentasDesdeTextos(false); guardar = true; }
+      if (normalizarTextos(estado)) guardar = true;
+      if (guardar) { try { guardarEstado(); } catch (e) {} }
+    }
+    const cotGuardada = n => estado.cotGuardadas.includes(Number(n));
+
+    // ===== MONEDA (USD / MXN, sin conversión) =====
+    const monedaActual = () => (estado.config && estado.config.moneda === "MXN") ? "MXN" : "USD";
+    function sincronizarControlMoneda() {
+      const m = document.getElementById("cfg_moneda");
+      if (m && estado.config) m.value = monedaActual();
+    }
+    function cambiarMoneda() {
+      estado.config.moneda = document.getElementById("cfg_moneda").value === "MXN" ? "MXN" : "USD";
+      guardarEstado();
+      renderCotizaciones();
+    }
+
+    // ===== CUENTAS BANCARIAS =====
+    function parsearBanco(txt) {
+      txt = String(txt || "").trim();
+      if (!txt || txt === "-") return null;
+      const cli = (/Cliente:?\s*(\d{6,})/i.exec(txt) || [])[1] || "";
+      let cuenta = (/Cuenta:?\s*(\d[\d\s\-]*\d)/i.exec(txt) || [])[1] || "";
+      if (!cuenta) {
+        const runs = (txt.match(/\d{8,}/g) || []).filter(n => n !== cli);
+        cuenta = runs[0] || "";
+      }
+      cuenta = cuenta.replace(/[\s\-]/g, "");
+      let banco = (/Banco:?\s*(.+?)(?=\s+(?:Cuenta|Cliente)\b|$)/i.exec(txt) || [])[1] || "";
+      if (!banco) banco = (/\(([^)]+)\)/.exec(txt) || [])[1] || "";
+      if (!banco) banco = txt.replace(/(Cuenta|Cliente):?\s*\d+/gi, "").replace(/\d{8,}/g, "").trim();
+      if (!cuenta && !cli) return null;
+      return { banco: banco.trim(), cuenta, cliente: cli };
+    }
+    function importarCuentasDesdeTextos(avisar) {
+      const existentes = new Set(estado.cuentas.map(c => (c.cuenta || "") + "|" + (c.cliente || "")));
+      let n = 0;
+      const procesar = (lista, tipo, campoNombre) => lista.forEach(x => {
+        const p = parsearBanco(x.banco);
+        if (!p) return;
+        const k = (p.cuenta || "") + "|" + (p.cliente || "");
+        if (existentes.has(k)) return;
+        existentes.add(k);
+        estado.cuentas.push({ id: nuevoIdCuenta(), tipo, titular: x[campoNombre] || "-", banco: p.banco, cuenta: p.cuenta, cliente: p.cliente, notas: "" });
+        n++;
+      });
+      procesar(estado.empleados, "Empleado", "nombre");
+      procesar(estado.proveedores, "Proveedor", "compania");
+      if (avisar) {
+        if (n) { guardarEstado(); renderTodo(); }
+        alert(n ? n + " cuenta(s) importada(s)." : "No hay cuentas nuevas por importar.");
+      }
+    }
+    function nuevoIdCuenta() { return estado.cuentas.length ? Math.max(...estado.cuentas.map(c => Number(c.id) || 0)) + 1 : 1; }
+    function actualizarListaTitulares() {
+      const tipoEl = document.getElementById("cta_tipo"), dl = document.getElementById("listaTitulares");
+      if (!tipoEl || !dl) return;
+      const t = tipoEl.value;
+      const nombres = t === "Empleado" ? estado.empleados.map(e => e.nombre)
+        : t === "Cliente" ? estado.clientes.map(c => c.compania)
+        : t === "Proveedor" ? estado.proveedores.map(p => p.compania) : [];
+      dl.innerHTML = nombres.filter(Boolean).map(n => `<option value="${escHTML(n)}"></option>`).join("");
+    }
+    function renderCuentas() {
+      const tb = document.getElementById("tablaCuentas");
+      if (!tb) return;
+      const q = (document.getElementById("buscarCuenta").value || "").toLowerCase();
+      const ft = document.getElementById("filtroTipoCuenta").value;
+      const filas = estado.cuentas.map((c, idx) => ({ c, idx })).filter(({ c }) =>
+        (!ft || c.tipo === ft) && (!q || [c.titular, c.banco, c.cuenta, c.cliente, c.notas, c.tipo].join(" ").toLowerCase().includes(q)));
+      tb.innerHTML = filas.length ? filas.map(({ c, idx }) => `
+        <tr>
+          <td><span class="tag-tipo">${escHTML(c.tipo)}</span></td>
+          <td><strong>${escHTML(c.titular)}</strong></td>
+          <td>${escHTML(c.banco) || "-"}</td>
+          <td class="mono">${escHTML(c.cuenta) || "-"}</td>
+          <td class="mono">${escHTML(c.cliente) || "-"}</td>
+          <td>${escHTML(c.notas) || ""}</td>
+          <td class="no-print"><div class="row-actions">
+            <button class="warning" title="Editar" onclick="editarCuenta(${idx})">✎</button>
+            <button class="danger" title="Eliminar" onclick="eliminarItem('cuentas', ${idx})">✕</button>
+          </div></td>
+        </tr>`).join("") : `<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:18px">Sin cuentas registradas</td></tr>`;
+    }
+    function guardarCuenta(e) {
+      e.preventDefault();
+      const v = id => document.getElementById(id).value.trim();
+      const reg = { tipo: v("cta_tipo"), titular: v("cta_titular"), banco: v("cta_banco"), cuenta: v("cta_cuenta").replace(/\s/g, ""), cliente: v("cta_cliente").replace(/\s/g, ""), notas: v("cta_notas") };
+      if (editando.cta >= 0) estado.cuentas[editando.cta] = Object.assign({}, estado.cuentas[editando.cta], reg);
+      else estado.cuentas.push(Object.assign({ id: nuevoIdCuenta() }, reg));
+      guardarEstado(); renderTodo(); cancelarEdicion("cta");
+    }
+    function editarCuenta(idx) {
+      const c = estado.cuentas[idx]; if (!c) return;
+      document.getElementById("cta_tipo").value = c.tipo || "Otro";
+      actualizarListaTitulares();
+      document.getElementById("cta_titular").value = c.titular || "";
+      document.getElementById("cta_banco").value = c.banco || "";
+      document.getElementById("cta_cuenta").value = c.cuenta || "";
+      document.getElementById("cta_cliente").value = c.cliente || "";
+      document.getElementById("cta_notas").value = c.notas || "";
+      entrarEdicion("cta", idx);
+    }
+
+    // ===== EDICIÓN GENÉRICA =====
+    const CFG_EDIC = {
+      cli:  { form: "formCliente",   g: "btnGuardarCli",  c: "btnCancelarCli",  txt: "➕ Agregar Cliente" },
+      prov: { form: "formProveedor", g: "btnGuardarProv", c: "btnCancelarProv", txt: "➕ Agregar Proveedor" },
+      cta:  { form: "formCuenta",    g: "btnGuardarCta",  c: "btnCancelarCta",  txt: "➕ Agregar Cuenta" },
+      cot:  { form: "formCotiz",     g: "btnGuardarCot",  c: "btnCancelarCot",  txt: "➕ Agregar Posición" },
+      gas:  { form: "formGasto",     g: "btnGuardarGas",  c: "btnCancelarGas",  txt: "➕ Registrar Gasto" },
+      alm:  { form: "formAlmacen",   g: "btnGuardarAlm",  c: "btnCancelarAlm",  txt: "➕ Agregar Artículo" }
+    };
+    function entrarEdicion(k, idx) {
+      const c = CFG_EDIC[k];
+      editando[k] = idx;
+      document.getElementById(c.g).textContent = "💾 Guardar cambios";
+      document.getElementById(c.c).style.display = "";
+      const f = document.getElementById(c.form);
+      f.classList.add("modo-edicion");
+      f.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    function cancelarEdicion(k) {
+      const c = CFG_EDIC[k]; editando[k] = -1;
+      const f = document.getElementById(c.form);
+      f.reset(); f.classList.remove("modo-edicion");
+      document.getElementById(c.g).textContent = c.txt;
+      document.getElementById(c.c).style.display = "none";
+      if (k === "cta") actualizarListaTitulares();
+      if (k === "gas") calcularFormGasto();
+      if (k === "cot") { delete document.getElementById("cot_oferta").dataset.almPos; recalcularFormCotiz(); actualizarInfoCliente(); }
+    }
+    const limpio = x => (x === "-" || x == null) ? "" : x;
+    const entero = (x, min) => Math.max(min == null ? 1 : min, Math.round(Number(x) || 0));
+
+    // ===== COTIZACIONES =====
+    function etiquetaAlmacen(a) { return `${a.pos} · ${a.mercancia}`; }
+    function actualizarListaAlmacen() {
+      const dl = document.getElementById("listaAlmacenDL");
+      if (dl) dl.innerHTML = estado.almacen.map(a => `<option value="${escHTML(etiquetaAlmacen(a))}"></option>`).join("");
+    }
+    function alEscribirDescripcion() {
+      const inp = document.getElementById("cot_oferta");
+      const a = estado.almacen.find(x => etiquetaAlmacen(x) === inp.value);
+      if (!a) return;
+      const margen = Number(a.margen) || 0, pu = Number(a.vk) || 0;
+      inp.value = a.mercancia;
+      inp.dataset.almPos = a.pos;
+      document.getElementById("cot_margen").value = margen;
+      document.getElementById("cot_ek").value = (Math.round((pu / (1 + margen / 100)) * 100) / 100).toFixed(2);
+      document.getElementById("cot_pu").value = pu.toFixed(2);
+    }
+    function mensajeCot(texto, err) {
+      const m = document.getElementById("msgCot");
+      if (!m) return;
+      m.textContent = texto; m.className = "msg-cot no-print" + (err ? " err" : ""); m.style.display = "block";
+      clearTimeout(msgTimer); msgTimer = setTimeout(() => { m.style.display = "none"; }, 6000);
+    }
+    function guardarPosicionCotizacion(e) {
+      e.preventDefault();
+      const v = id => document.getElementById(id).value;
+      const oferta = (v("cot_oferta") || "").trim() || "Sin descripción";
+      const almPos = document.getElementById("cot_oferta").dataset.almPos;
+      const datos = {
+        cotiz: Number(v("cot_num")), fecha: v("cot_fecha"), cliente: Number(v("cot_cliente")), titulo: v("cot_titulo"),
+        pos: Number(v("cot_pos")), cant: entero(v("cot_cant")), art: v("cot_art"), oferta,
+        ek: Number(v("cot_ek")), margen: Number(v("cot_margen")), pu: Number(v("cot_pu"))
+      };
+      if (almPos !== undefined && almPos !== "") datos.alm_pos = Number(almPos);
+      if (editando.cot >= 0) {
+        estado.cotizaciones[editando.cot] = Object.assign({}, estado.cotizaciones[editando.cot], datos);
+        const sel = document.getElementById("filtroCotiz");
+        if (sel.value && sel.value !== String(datos.cotiz)) sel.value = String(datos.cotiz);
+        guardarEstado();
+        cancelarEdicion("cot");
+        renderCotizaciones();
+        return;
+      }
+      estado.cotizaciones.push(Object.assign({ alm_pos: 1.0, moneda: "USD",
+        nota: "Opcionalmente ofrecemos el servicio de puesta en marcha, con un costo de 800 USD por día." }, datos));
+      guardarEstado();
+      poblarSelectoresCotiz();
+      document.getElementById("filtroCotiz").value = String(datos.cotiz);
+      renderCotizaciones();
+      const mN = datos.cotiz, mC = datos.cliente, mT = datos.titulo, mF = datos.fecha;
+      e.target.reset();
+      delete document.getElementById("cot_oferta").dataset.almPos;
+      document.getElementById("cot_num").value = mN;
+      document.getElementById("cot_fecha").value = mF;
+      document.getElementById("cot_titulo").value = mT;
+      document.getElementById("cot_cliente").value = mC;
+      document.getElementById("cot_pos").value = siguientePos(mN);
+      recalcularFormCotiz();
+      actualizarInfoCliente();
+    }
+    function siguientePos(n) {
+      const ps = estado.cotizaciones.filter(c => Number(c.cotiz) === Number(n)).map(c => Number(c.pos) || 0);
+      return ps.length ? Math.floor(Math.max(...ps) / 10) * 10 + 10 : 10;
+    }
+    function editarCotizacion(idx) {
+      const c = estado.cotizaciones[idx]; if (!c) return;
+      poblarSelectoresCotiz();
+      const s = (id, val) => document.getElementById(id).value = (val == null ? "" : val);
+      s("cot_num", c.cotiz); s("cot_fecha", c.fecha); s("cot_cliente", c.cliente); s("cot_titulo", c.titulo);
+      s("cot_pos", c.pos); s("cot_cant", c.cant); s("cot_art", c.art); s("cot_oferta", c.oferta);
+      s("cot_ek", c.ek); s("cot_margen", c.margen); s("cot_pu", c.pu);
+      delete document.getElementById("cot_oferta").dataset.almPos;
+      actualizarInfoCliente();
+      entrarEdicion("cot", idx);
+    }
+    function guardarCotizacion() {
+      if (editando.cot >= 0) { mensajeCot("Termina o cancela la edición de la posición antes de guardar la cotización.", true); return; }
+      const n = Number(document.getElementById("cot_num").value);
+      if (!(n > 0)) { mensajeCot("Escribe el No. de Cotización.", true); return; }
+      const pos = estado.cotizaciones.filter(c => Number(c.cotiz) === n);
+      if (!pos.length) { mensajeCot(`La cotización #${n} aún no tiene posiciones. Agrégalas con el formulario o con "📦 Agregar del Almacén".`, true); return; }
+      const cli = estado.clientes.find(c => Number(c.id) === Number(pos[0].cliente));
+      if (!cli) { mensajeCot("Selecciona un cliente de 'Clientes y Contactos' para esta cotización.", true); return; }
+      if (!(pos[0].titulo || "").trim()) { mensajeCot("Escribe el Título del Proyecto.", true); document.getElementById("cot_titulo").focus(); return; }
+      if (!cotGuardada(n)) estado.cotGuardadas.push(n);
+      cotizNueva = null;
+      guardarEstado();
+      poblarSelectoresCotiz();
+      document.getElementById("filtroCotiz").value = String(n);
+      renderCotizaciones();
+      const neto = pos.reduce((a, c) => a + Number(c.cant) * Number(c.pu), 0);
+      mensajeCot(`✔ Cotización #${n} guardada — ${cli.compania} — ${pos.length} posición(es) — Total con IVA: ${formatoMoneda(neto * 1.16)} ${monedaActual()}`);
+    }
+
+    // ===== CLIENTE DE LA COTIZACIÓN =====
+    function actualizarInfoCliente() {
+      const info = document.getElementById("cot_cliente_info"), sel = document.getElementById("cot_cliente");
+      if (!info || !sel) return;
+      const c = estado.clientes.find(x => String(x.id) === sel.value);
+      if (!c) { info.textContent = estado.clientes.length ? "" : "No hay clientes: regístralos en 'Clientes y Contactos'."; return; }
+      info.innerHTML = [c.compania, c.rfc !== "-" ? "RFC " + c.rfc : "", c.contacto !== "-" ? "Atn: " + c.contacto : "", c.tel !== "-" ? "Tel " + c.tel : "", c.correo !== "-" ? c.correo : ""]
+        .filter(Boolean).map(escHTML).join(" · ");
+    }
+    function aplicarClienteCotizacion() {
+      actualizarInfoCliente();
+      if (editando.cot >= 0) return;
+      const n = Number(document.getElementById("cot_num").value);
+      const cli = Number(document.getElementById("cot_cliente").value);
+      const pos = estado.cotizaciones.filter(c => Number(c.cotiz) === n);
+      if (pos.length && pos.some(c => Number(c.cliente) !== cli)) {
+        const c = estado.clientes.find(x => Number(x.id) === cli);
+        if (confirm(`¿Asignar el cliente "${c ? c.compania : cli}" a las ${pos.length} posición(es) de la cotización #${n}?`)) {
+          pos.forEach(p => p.cliente = cli);
+          guardarEstado();
+          renderCotizaciones();
+        } else {
+          document.getElementById("cot_cliente").value = String(pos[0].cliente);
+          actualizarInfoCliente();
+        }
+      }
+    }
+    document.getElementById("cot_cliente").addEventListener("change", aplicarClienteCotizacion);
+
+    // ===== SELECTORES (Almacén / Clientes) =====
+    let modoSelector = "";
+    function abrirSelector(modo) {
+      modoSelector = modo;
+      document.getElementById("pkTitulo").textContent = modo === "almacen" ? "📦 Agregar artículos del Almacén a la cotización" : "🏢 Seleccionar cliente (Clientes y Contactos)";
+      document.getElementById("pkBuscar").value = "";
+      document.getElementById("pkBuscar").placeholder = modo === "almacen" ? "Buscar por código, mercancía o proveedor..." : "Buscar por compañía, sinónimo, contacto o RFC...";
+      document.getElementById("pkCtx").style.display = modo === "almacen" ? "grid" : "none";
+      setStatus("");
+      if (modo === "almacen") cargarCtxSelector();
+      document.getElementById("pickerModal").classList.add("open");
+      renderSelector();
+      document.getElementById("pkBuscar").focus();
+    }
+    function abrirSelectorAlmacen() {
+      if (!document.getElementById("mod-cotizaciones").classList.contains("active")) abrirModulo("mod-cotizaciones", document.querySelector(".tab-btn"));
+      abrirSelector("almacen");
+    }
+    function abrirSelectorCliente() { abrirSelector("clientes"); }
+    function cerrarSelector() { document.getElementById("pickerModal").classList.remove("open"); }
+    function setStatus(msg, err) {
+      const s = document.getElementById("pkStatus");
+      s.textContent = msg; s.className = "pk-status" + (err ? " err" : "");
+    }
+    function cargarCtxSelector() {
+      const sel = document.getElementById("pk_cliente");
+      const n = Number(document.getElementById("cot_num").value);
+      const base = estado.cotizaciones.find(c => Number(c.cotiz) === n);
+      sel.innerHTML = estado.clientes.length
+        ? estado.clientes.map(c => `<option value="${c.id}">${escHTML(c.id + " - " + c.sinonimo + " (" + c.compania + ")")}</option>`).join("")
+        : `<option value="">— No hay clientes: usa ➕ para registrar uno —</option>`;
+      document.getElementById("pk_num").value = n || "";
+      sel.value = base ? String(base.cliente) : document.getElementById("cot_cliente").value;
+      document.getElementById("pk_titulo").value = (document.getElementById("cot_titulo").value || "").trim() || (base ? base.titulo : "");
+    }
+    function pkCambio(campo) {
+      const g = id => document.getElementById(id);
+      if (campo === "titulo") { g("cot_titulo").value = g("pk_titulo").value; return; }
+      if (campo === "cliente") { g("cot_cliente").value = g("pk_cliente").value; aplicarClienteCotizacion(); g("pk_cliente").value = g("cot_cliente").value; actualizarInfoCliente(); return; }
+      if (campo === "num") {
+        const n = Number(g("pk_num").value);
+        if (!(n > 0)) return;
+        g("cot_num").value = n;
+        const base = estado.cotizaciones.find(c => Number(c.cotiz) === n);
+        if (base) {
+          g("pk_cliente").value = String(base.cliente); g("pk_titulo").value = base.titulo || "";
+          g("cot_cliente").value = String(base.cliente); g("cot_titulo").value = base.titulo || "";
+          g("cot_fecha").value = base.fecha || g("cot_fecha").value;
+          cotizNueva = null;
+        } else { cotizNueva = n; }
+        g("cot_pos").value = siguientePos(n);
+        const sel = g("filtroCotiz");
+        if (![...sel.options].some(o => o.value === String(n))) sel.insertAdjacentHTML("beforeend", `<option value="${n}">Cotización #${n}</option>`);
+        sel.value = String(n);
+        renderCotizaciones();
+        actualizarInfoCliente();
+      }
+    }
+    function irANuevoCliente() {
+      cerrarSelector();
+      abrirModulo("mod-clientes", document.querySelectorAll(".tab-btn")[3]);
+      const f = document.getElementById("cli_compania"); if (f) f.focus();
+    }
+    function renderSelector() {
+      const q = (document.getElementById("pkBuscar").value || "").toLowerCase();
+      const head = document.getElementById("pkHead"), body = document.getElementById("pkBody");
+      if (modoSelector === "almacen") {
+        head.innerHTML = `<tr><th>Pos.</th><th>Mercancía / Descripción</th><th>Proveedor</th><th class="num">Margen</th><th class="num">Precio venta (${monedaActual()})</th><th>Cant.</th><th></th></tr>`;
+        const filas = estado.almacen.map((a, idx) => ({ a, idx })).filter(({ a }) => !q || `${a.pos} ${a.mercancia} ${a.proveedor}`.toLowerCase().includes(q));
+        body.innerHTML = filas.length ? filas.map(({ a, idx }) => `
+          <tr>
+            <td><strong>${escHTML(a.pos)}</strong></td>
+            <td>${escHTML(a.mercancia)}</td>
+            <td>${escHTML(a.proveedor) || "-"}</td>
+            <td class="num">${Number(a.margen || 0).toFixed(1)}%</td>
+            <td class="num"><strong>${formatoMoneda(a.vk)}</strong></td>
+            <td><input type="number" class="pk-qty" id="pkq_${idx}" value="1" min="1" step="1" inputmode="numeric" /></td>
+            <td><button class="success" onclick="agregarDesdeAlmacen(${idx})">➕ Agregar</button></td>
+          </tr>`).join("") : `<tr><td colspan="7" style="text-align:center;padding:16px;color:var(--text-muted)">Sin artículos en el almacén${q ? " para esa búsqueda" : ""}.</td></tr>`;
+      } else {
+        const actual = document.getElementById("cot_cliente").value;
+        head.innerHTML = `<tr><th>ID</th><th>Compañía</th><th>Sinónimo</th><th>Contacto</th><th>Teléfono</th><th>Correo</th><th></th></tr>`;
+        const filas = estado.clientes.filter(c => !q || `${c.compania} ${c.sinonimo} ${c.contacto} ${c.rfc}`.toLowerCase().includes(q));
+        body.innerHTML = filas.length ? filas.map(c => `
+          <tr>
+            <td>${c.id}</td>
+            <td><strong>${escHTML(c.compania)}</strong></td>
+            <td><span class="badge">${escHTML(c.sinonimo)}</span></td>
+            <td>${escHTML(c.contacto)}</td>
+            <td>${escHTML(c.tel)}</td>
+            <td>${escHTML(c.correo)}</td>
+            <td><button class="${String(c.id) === actual ? "secondary" : "success"}" onclick="seleccionarCliente(${c.id})">${String(c.id) === actual ? "✔ Actual" : "Seleccionar"}</button></td>
+          </tr>`).join("") : `<tr><td colspan="7" style="text-align:center;padding:16px;color:var(--text-muted)">Sin clientes${q ? " para esa búsqueda" : ""}.</td></tr>`;
+      }
+    }
+    function seleccionarCliente(id) {
+      document.getElementById("cot_cliente").value = String(id);
+      aplicarClienteCotizacion();
+      cerrarSelector();
+      renderCotizaciones();
+    }
+    function agregarDesdeAlmacen(idx) {
+      const a = estado.almacen[idx]; if (!a) return;
+      const g = id => document.getElementById(id);
+      if (editando.cot >= 0) { setStatus("Termina o cancela la edición de la posición antes de agregar artículos.", true); return; }
+      const qty = entero((g("pkq_" + idx) || {}).value, 1);
+      const n = Number(g("pk_num").value);
+      if (!(n > 0)) { setStatus("Escribe el No. de Cotización.", true); g("pk_num").focus(); return; }
+      const cliente = Number(g("pk_cliente").value);
+      if (!estado.clientes.some(c => Number(c.id) === cliente)) { setStatus("Selecciona un cliente de 'Clientes y Contactos' (o registra uno con ➕).", true); g("pk_cliente").focus(); return; }
+      const titulo = (g("pk_titulo").value || "").trim();
+      if (!titulo) { setStatus("Escribe el Título del Proyecto.", true); g("pk_titulo").focus(); return; }
+      const existentes = estado.cotizaciones.filter(c => Number(c.cotiz) === n);
+      const base = existentes[0];
+      existentes.forEach(p => { p.titulo = titulo; p.cliente = cliente; });
+      const fecha = base ? base.fecha : (g("cot_fecha").value || new Date().toISOString().slice(0, 10));
+      const margen = Number(a.margen) || 0, pu = Number(a.vk) || 0;
+      const ek = Math.round((pu / (1 + margen / 100)) * 100) / 100;
+      const pos = siguientePos(n);
+      estado.cotizaciones.push({
+        cotiz: n, fecha, cliente, titulo, pos, cant: qty, art: "pza.", alm_pos: a.pos, oferta: a.mercancia,
+        ek, margen, pu, moneda: "USD",
+        nota: base ? base.nota : "Opcionalmente ofrecemos el servicio de puesta en marcha, con un costo de 800 USD por día."
+      });
+      guardarEstado();
+      g("cot_num").value = n; g("cot_cliente").value = String(cliente); g("cot_titulo").value = titulo; g("cot_fecha").value = fecha;
+      poblarSelectoresCotiz();
+      g("filtroCotiz").value = String(n);
+      g("cot_pos").value = siguientePos(n);
+      renderCotizaciones();
+      actualizarInfoCliente();
+      setStatus(`✔ Agregado a la cotización #${n} (pos. ${pos}): ${qty} × ${a.mercancia.slice(0, 60)}`);
+    }
+
+    // ===== GASTOS =====
+    function guardarGasto(e) {
+      e.preventDefault();
+      const v = id => document.getElementById(id).value;
+      const datos = {
+        fecha: v("gas_fecha"), gastor: v("gas_gastor"), descripcion: v("gas_desc"), neto: Number(v("gas_neto")),
+        iva: Number(v("gas_ivacant")), bruto: Number(v("gas_bruto")), tipo: v("gas_tipo"), folio: v("gas_docno"),
+        cuenta: v("gas_cuenta"), proyecto: v("gas_proyecto")
+      };
+      if (editando.gas >= 0) estado.gastos[editando.gas] = Object.assign({}, estado.gastos[editando.gas], datos);
+      else estado.gastos.unshift(datos);
+      guardarEstado();
+      cancelarEdicion("gas");
+      renderGastos();
+    }
+    function editarGasto(idx) {
+      const x = estado.gastos[idx]; if (!x) return;
+      const s = (id, val) => document.getElementById(id).value = (val == null ? "" : val);
+      s("gas_fecha", x.fecha); s("gas_gastor", x.gastor); s("gas_desc", x.descripcion); s("gas_neto", x.neto);
+      s("gas_ivaporc", x.neto > 0 ? Math.round((x.iva / x.neto) * 10000) / 100 : 16);
+      s("gas_ivacant", Number(x.iva).toFixed(2)); s("gas_bruto", Number(x.bruto).toFixed(2));
+      s("gas_tipo", x.tipo); s("gas_docno", x.folio); s("gas_cuenta", x.cuenta); s("gas_proyecto", x.proyecto);
+      entrarEdicion("gas", idx);
+    }
+
+    // ===== ALMACÉN =====
+    function guardarAlmacen(e) {
+      e.preventDefault();
+      const v = id => document.getElementById(id).value;
+      const datos = { pos: Number(v("alm_pos")), mercancia: v("alm_mercancia").trim(), vk: Number(v("alm_vk")), margen: Number(v("alm_margen")), proveedor: v("alm_prov").trim() };
+      if (editando.alm >= 0) estado.almacen[editando.alm] = Object.assign({}, estado.almacen[editando.alm], datos);
+      else estado.almacen.push(datos);
+      guardarEstado();
+      cancelarEdicion("alm");
+      renderAlmacen();
+    }
+    function editarAlmacen(idx) {
+      const a = estado.almacen[idx]; if (!a) return;
+      const s = (id, val) => document.getElementById(id).value = (val == null ? "" : val);
+      s("alm_pos", a.pos); s("alm_mercancia", a.mercancia); s("alm_vk", a.vk); s("alm_margen", a.margen); s("alm_prov", a.proveedor);
+      entrarEdicion("alm", idx);
+    }
+    const _ordenarAlmOrig = ordenarAlmacen;
+    ordenarAlmacen = function (criterio) {
+      if (editando.alm >= 0) cancelarEdicion("alm");
+      _ordenarAlmOrig(criterio);
+    };
+    const _renderAlmOrig = renderAlmacen;
+    renderAlmacen = function () { _renderAlmOrig(); actualizarListaAlmacen(); };
+
+    // ===== CLIENTES =====
+    function guardarCliente(e) {
+      e.preventDefault();
+      const v = id => document.getElementById(id).value.trim();
+      const datos = {
+        compania: v("cli_compania"), sinonimo: v("cli_sinonimo"), fiscal: v("cli_fiscal") || "-", rfc: v("cli_rfc") || "-",
+        calle: v("cli_calle") || "-", ciudad: v("cli_ciudad") || "-", tel: v("cli_tel") || "-", contacto: v("cli_contacto") || "-", correo: v("cli_correo") || "-"
+      };
+      if (editando.cli >= 0) estado.clientes[editando.cli] = Object.assign({}, estado.clientes[editando.cli], datos);
+      else estado.clientes.push(Object.assign({ id: estado.clientes.length ? Math.max(...estado.clientes.map(c => c.id)) + 1 : 1 }, datos));
+      guardarEstado(); renderTodo(); cancelarEdicion("cli");
+    }
+    function editarCliente(idx) {
+      const c = estado.clientes[idx]; if (!c) return;
+      const s = (id, val) => document.getElementById(id).value = limpio(val);
+      s("cli_compania", c.compania); s("cli_sinonimo", c.sinonimo); s("cli_fiscal", c.fiscal); s("cli_rfc", c.rfc);
+      s("cli_calle", c.calle); s("cli_ciudad", c.ciudad); s("cli_tel", c.tel); s("cli_contacto", c.contacto); s("cli_correo", c.correo);
+      entrarEdicion("cli", idx);
+    }
+    // ===== PROVEEDORES =====
+    function guardarProveedor(e) {
+      e.preventDefault();
+      const v = id => document.getElementById(id).value.trim();
+      const datos = {
+        compania: v("prov_compania"), sinonimo: v("prov_sinonimo"), rfc: v("prov_rfc") || "-", ciudad: v("prov_ciudad") || "-",
+        tel: v("prov_tel") || "-", contacto: v("prov_contacto") || "-", correo: v("prov_correo") || "-", banco: v("prov_banco") || "-"
+      };
+      if (editando.prov >= 0) estado.proveedores[editando.prov] = Object.assign({}, estado.proveedores[editando.prov], datos);
+      else estado.proveedores.push(Object.assign({ id: estado.proveedores.length ? Math.max(...estado.proveedores.map(p => p.id)) + 1 : 1, direccion: "-" }, datos));
+      guardarEstado(); renderTodo(); cancelarEdicion("prov");
+    }
+    function editarProveedor(idx) {
+      const p = estado.proveedores[idx]; if (!p) return;
+      const s = (id, val) => document.getElementById(id).value = limpio(val);
+      s("prov_compania", p.compania); s("prov_sinonimo", p.sinonimo); s("prov_rfc", p.rfc); s("prov_ciudad", p.ciudad);
+      s("prov_tel", p.tel); s("prov_contacto", p.contacto); s("prov_correo", p.correo); s("prov_banco", p.banco);
+      entrarEdicion("prov", idx);
+    }
+
+    // ===== ELIMINAR =====
+    const _eliminarItemOrig = eliminarItem;
+    eliminarItem = function (col, idx) {
+      const r = estado[col] && estado[col][idx];
+      if (!r) return;
+      if (col === "clientes") {
+        const usos = estado.cotizaciones.filter(c => Number(c.cliente) === Number(r.id)).length;
+        if (!confirm(`¿Eliminar al cliente "${r.compania}"?` + (usos ? `\n\nAtención: tiene ${usos} posición(es) de cotización asociadas; quedarán sin cliente.` : ""))) return;
+      } else if (col === "proveedores") { if (!confirm(`¿Eliminar al proveedor "${r.compania}"?`)) return;
+      } else if (col === "empleados") { if (!confirm(`¿Eliminar al empleado "${r.nombre}"?`)) return;
+      } else if (col === "cuentas") { if (!confirm(`¿Eliminar la cuenta de "${r.titular}"?`)) return;
+      }
+      const mapa = { clientes: "cli", proveedores: "prov", cuentas: "cta", cotizaciones: "cot", gastos: "gas", almacen: "alm" };
+      const k = mapa[col];
+      if (k && editando[k] >= 0) { if (editando[k] === idx) cancelarEdicion(k); else if (editando[k] > idx) editando[k]--; }
+      if (col === "empleados" && empleadoEditando >= 0) { if (empleadoEditando === idx) cancelarEdicionEmpleado(); else if (empleadoEditando > idx) empleadoEditando--; }
+      const numCot = col === "cotizaciones" ? Number(r.cotiz) : null;
+      _eliminarItemOrig(col, idx);
+      if (numCot !== null && !estado.cotizaciones.some(c => Number(c.cotiz) === numCot)) {
+        estado.cotGuardadas = estado.cotGuardadas.filter(x => x !== numCot);
+        guardarEstado(); renderCotizaciones();
+      }
+    };
+
+    // ===== NUEVA COTIZACIÓN =====
+    function nuevaCotizacion() {
+      if (editando.cot >= 0) cancelarEdicion("cot");
+      const max = estado.cotizaciones.length ? Math.max(...estado.cotizaciones.map(c => Number(c.cotiz) || 0)) : 1000;
+      const n = max + 1;
+      cotizNueva = n;
+      const hoy = new Date();
+      const iso = hoy.getFullYear() + "-" + String(hoy.getMonth() + 1).padStart(2, "0") + "-" + String(hoy.getDate()).padStart(2, "0");
+      const set = (id, val) => document.getElementById(id).value = val;
+      set("cot_num", n); set("cot_fecha", iso); set("cot_titulo", ""); set("cot_pos", 10); set("cot_cant", 1);
+      set("cot_art", "pza."); set("cot_oferta", ""); set("cot_ek", 100); set("cot_margen", 15);
+      delete document.getElementById("cot_oferta").dataset.almPos;
+      recalcularFormCotiz();
+      const sel = document.getElementById("filtroCotiz");
+      if (![...sel.options].some(o => o.value === String(n))) sel.insertAdjacentHTML("beforeend", `<option value="${n}">Cotización #${n}</option>`);
+      sel.value = String(n);
+      renderCotizaciones();
+      document.getElementById("cot_titulo").focus();
+    }
+    const _poblarOrig = poblarSelectoresCotiz;
+    poblarSelectoresCotiz = function () {
+      const sel = document.getElementById("filtroCotiz");
+      const prev = sel.value;
+      const cliPrev = document.getElementById("cot_cliente").value;
+      _poblarOrig();
+      if (cliPrev) document.getElementById("cot_cliente").value = cliPrev;
+      if (cotizNueva !== null) {
+        if (estado.cotizaciones.some(c => Number(c.cotiz) === cotizNueva)) cotizNueva = cotizNueva;
+        if (prev === String(cotizNueva)) {
+          if (![...sel.options].some(o => o.value === prev)) sel.insertAdjacentHTML("beforeend", `<option value="${prev}">Cotización #${prev}</option>`);
+          sel.value = prev;
+        } else if (!estado.cotizaciones.some(c => Number(c.cotiz) === cotizNueva)) cotizNueva = null;
+      }
+      [...sel.options].forEach(o => { if (o.value && !cotGuardada(o.value)) o.textContent = `Cotización #${o.value} (borrador)`; });
+      actualizarInfoCliente();
+    };
+    const _renderCotOrig = renderCotizaciones;
+    renderCotizaciones = function () {
+      _renderCotOrig();
+      const mon = monedaActual();
+      const res = document.getElementById("resumenCotizacionActiva");
+      const filtro = Number(document.getElementById("filtroCotiz").value);
+      const hayPos = filtro > 0 && estado.cotizaciones.some(c => Number(c.cotiz) === filtro);
+      if (cotizNueva !== null && !hayPos) {
+        const cli = estado.clientes.find(c => Number(c.id) === Number(document.getElementById("cot_cliente").value)) || {};
+        res.innerHTML = `<div class="aviso-nueva">🆕 Cotización #${cotizNueva} nueva — cliente: ${escHTML(cli.compania || "elige un cliente")}. Agrega posiciones con el formulario o con "📦 Agregar del Almacén" y presiona "💾 Guardar Cotización".</div>`;
+      } else {
+        if (mon === "MXN") res.innerHTML = res.innerHTML.replace(/ USD/g, " MXN");
+        res.insertAdjacentHTML("beforeend", `<div class="nota-moneda">Importes en ${mon === "MXN" ? "pesos mexicanos (MXN)" : "dólares (USD)"}.</div>`);
+        if (hayPos && !cotGuardada(filtro)) res.insertAdjacentHTML("beforeend", `<div class="aviso-borrador">📝 La cotización #${filtro} está en borrador. Presiona "💾 Guardar Cotización" para guardarla.</div>`);
+      }
+      const ths = document.querySelectorAll("#mod-cotizaciones table thead th");
+      [["Costo Unit.", 7], ["Precio Unit.", 9], ["Subtotal", 10]].forEach(([t, i]) => { if (ths[i]) ths[i].textContent = `${t} (${mon})`; });
+    };
+
+    // ===== EMPRESA =====
+    function htmlEncabezadoEmpresa(titulo) {
+      const e = estado.empresa;
+      const datos = [e.rfc ? "RFC: " + e.rfc : "", e.direccion, e.contacto].filter(Boolean).map(escHTML).join(" · ");
+      return `
+        ${e.logo ? `<img src="${e.logo}" alt="Logo" />` : ""}
+        <div class="pv-info">
+          <div class="pv-nombre">${escHTML(e.nombre || "Mi Empresa")}</div>
+          ${datos ? `<div class="pv-datos">${datos}</div>` : ""}
+        </div>
+        <div class="pv-meta">${titulo ? `<strong>${escHTML(titulo)}</strong><br/>` : ""}${new Date().toLocaleDateString("es-MX", { day: "2-digit", month: "long", year: "numeric" })}</div>`;
+    }
+    function tituloModuloActivo() {
+      if (moduloActivoId === "mod-cotizaciones") return "";
+      const h2 = document.querySelector("#" + moduloActivoId + " .section-header h2");
+      return h2 ? h2.textContent.trim() : "";
+    }
+    function aplicarEmpresa() {
+      const e = estado.empresa;
+      const logo = document.getElementById("brandLogo"), nom = document.getElementById("brandName");
+      if (logo) { logo.src = e.logo || ""; logo.style.display = e.logo ? "inline-block" : "none"; }
+      if (nom) nom.textContent = e.nombre || NOMBRE_DEFECTO;
+      document.title = (e.nombre ? e.nombre + " — " : "") + "Sistema de Administración ERP";
+      const ph = document.getElementById("printHeader");
+      if (ph) { ph.className = "pv-head"; ph.innerHTML = htmlEncabezadoEmpresa(tituloModuloActivo()); }
+    }
+    function pintarLogoPrev() {
+      document.getElementById("empLogoPrev").innerHTML = logoTemporal ? `<img src="${logoTemporal}" alt="Logo" />` : "Sin logo";
+    }
+    function abrirEmpresaModal() {
+      asegurarDatos();
+      const e = estado.empresa;
+      logoTemporal = e.logo || "";
+      document.getElementById("empNombreIn").value = e.nombre || "";
+      document.getElementById("empRfcIn").value = e.rfc || "";
+      document.getElementById("empDirIn").value = e.direccion || "";
+      document.getElementById("empContactoIn").value = e.contacto || "";
+      pintarLogoPrev();
+      document.getElementById("empresaModal").classList.add("open");
+    }
+    function cerrarEmpresaModal() { document.getElementById("empresaModal").classList.remove("open"); }
+    function cargarLogoEmpresa(ev) {
+      const f = ev.target.files[0];
+      if (!f) return;
+      if (!/^image\//.test(f.type)) { alert("Selecciona un archivo de imagen."); return; }
+      if (f.size > 5 * 1024 * 1024) { alert("La imagen es muy grande (máx. 5 MB)."); return; }
+      const lector = new FileReader();
+      lector.onload = () => {
+        if (f.type === "image/svg+xml") { logoTemporal = lector.result; pintarLogoPrev(); return; }
+        const img = new Image();
+        img.onload = () => {
+          const esc = Math.min(1, 420 / Math.max(img.width, img.height));
+          const c = document.createElement("canvas");
+          c.width = Math.max(1, Math.round(img.width * esc)); c.height = Math.max(1, Math.round(img.height * esc));
+          c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+          logoTemporal = c.toDataURL("image/png"); pintarLogoPrev();
+        };
+        img.onerror = () => alert("No se pudo leer la imagen.");
+        img.src = lector.result;
+      };
+      lector.readAsDataURL(f);
+      ev.target.value = "";
+    }
+    function quitarLogoEmpresa() { logoTemporal = ""; pintarLogoPrev(); }
+    function guardarEmpresa() {
+      estado.empresa = {
+        nombre: document.getElementById("empNombreIn").value.trim(), rfc: document.getElementById("empRfcIn").value.trim(),
+        direccion: document.getElementById("empDirIn").value.trim(), contacto: document.getElementById("empContactoIn").value.trim(), logo: logoTemporal
+      };
+      try { guardarEstado(); } catch (e) { alert("No se pudo guardar (almacenamiento lleno). Usa un logo más pequeño."); return; }
+      aplicarEmpresa(); cerrarEmpresaModal();
+    }
+
+    // ===== VISTA PREVIA =====
+    function aplicarOrientacion() {
+      const o = document.getElementById("pvOrient").value;
+      let st = document.getElementById("pageStyle");
+      if (!st) { st = document.createElement("style"); st.id = "pageStyle"; document.head.appendChild(st); }
+      st.textContent = `@page { size: letter ${o}; margin: 0; }`;
+      document.getElementById("previewPaper").classList.toggle("vertical", o === "portrait");
+    }
+    function abrirVistaPrevia() {
+      asegurarDatos();
+      const sec = document.getElementById(moduloActivoId);
+      const clon = sec.cloneNode(true);
+      clon.querySelectorAll(".no-print, form, button, input, select, .aviso-borrador, .msg-cot").forEach(n => n.remove());
+      if (moduloActivoId === "mod-cotizaciones") clon.querySelectorAll(".section-header").forEach(n => n.remove());
+      clon.querySelectorAll("[id]").forEach(n => n.removeAttribute("id"));
+      clon.classList.remove("module-section", "active");
+      clon.style.cssText = "display:block;border:none;box-shadow:none;padding:0;background:#fff";
+      const paper = document.getElementById("previewPaper");
+      paper.innerHTML = `<div class="pv-head">${htmlEncabezadoEmpresa(tituloModuloActivo())}</div>`;
+      paper.appendChild(clon);
+      document.getElementById("pvOrient").value = sec.querySelectorAll("thead th").length > 7 ? "landscape" : "portrait";
+      aplicarOrientacion();
+      document.getElementById("previewOverlay").classList.add("open");
+      document.body.classList.add("previewing");
+    }
+    function cerrarVistaPrevia() {
+      document.getElementById("previewOverlay").classList.remove("open");
+      document.body.classList.remove("previewing");
+    }
+    document.addEventListener("keydown", e => { if (e.key === "Escape") { cerrarVistaPrevia(); cerrarEmpresaModal(); cerrarSelector(); } });
+    const _abrirModuloOrig = abrirModulo;
+    abrirModulo = function (id, btn) { _abrirModuloOrig(id, btn); aplicarEmpresa(); };
+
+    // ===== EMPLEADOS =====
+    let empleadoEditando = -1;
+    function guardarEmpleado(e) {
+      e.preventDefault();
+      const v = id => document.getElementById(id).value.trim();
+      const maxNo = estado.empleados.length ? Math.max(...estado.empleados.map(x => Number(x.pers_no) || 0)) : 0;
+      const noIn = Number(v("emp_no"));
+      const pers_no = noIn > 0 ? noIn : (empleadoEditando >= 0 ? estado.empleados[empleadoEditando].pers_no : maxNo + 1);
+      if (estado.empleados.some((x, i) => Number(x.pers_no) === pers_no && i !== empleadoEditando)) { alert("Ya existe un empleado con el No. Personal " + pers_no + "."); return; }
+      const reg = {
+        pers_no, titulo: v("emp_titulo") || "-", nombre: v("emp_nombre"), depto: v("emp_depto") || "-", puesto: v("emp_puesto") || "-",
+        rfc: v("emp_rfc") || "-", curp: v("emp_curp") || "-", direccion: v("emp_dir") || "-", celular: v("emp_cel") || "-",
+        correo: v("emp_correo") || "-", banco: v("emp_banco") || "-"
+      };
+      if (empleadoEditando >= 0) estado.empleados[empleadoEditando] = reg; else estado.empleados.push(reg);
+      guardarEstado(); renderTodo(); cancelarEdicionEmpleado();
+    }
+    function editarEmpleado(idx) {
+      const m = estado.empleados[idx]; if (!m) return;
+      const set = (id, val) => document.getElementById(id).value = limpio(val);
+      set("emp_no", m.pers_no); set("emp_titulo", m.titulo); set("emp_nombre", m.nombre); set("emp_depto", m.depto);
+      set("emp_puesto", m.puesto); set("emp_rfc", m.rfc); set("emp_curp", m.curp); set("emp_dir", m.direccion);
+      set("emp_cel", m.celular); set("emp_correo", m.correo); set("emp_banco", m.banco);
+      empleadoEditando = idx;
+      document.getElementById("btnGuardarEmp").textContent = "💾 Guardar cambios";
+      document.getElementById("btnCancelarEmp").style.display = "";
+      const f = document.getElementById("formEmpleado"); f.classList.add("modo-edicion");
+      f.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    function cancelarEdicionEmpleado() {
+      empleadoEditando = -1;
+      const f = document.getElementById("formEmpleado"); f.reset(); f.classList.remove("modo-edicion");
+      document.getElementById("btnGuardarEmp").textContent = "➕ Agregar Empleado";
+      document.getElementById("btnCancelarEmp").style.display = "none";
+    }
+
+    window.addEventListener("DOMContentLoaded", renderTodo);
+  </script>
+<!-- ERP: botón para regresar al ERP Principal (agregado; no modifica el resto de la aplicación) -->
+<style>
+#erpVolverBtn{position:fixed;left:14px;bottom:14px;z-index:2147483000;background:#1a2f5a;color:#fff;font:600 13px 'Segoe UI',Arial,sans-serif;padding:9px 14px;border-radius:8px;text-decoration:none;box-shadow:0 3px 10px rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.35);opacity:.92}
+#erpVolverBtn:hover,#erpVolverBtn:focus-visible{opacity:1;background:#0d6efd;outline:2px solid #ffc107}
+@media print{#erpVolverBtn{display:none!important}}
+</style>
+<a id="erpVolverBtn" href="ERP_Principal.html" title="Regresar al ERP Principal">&larr; Regresar al ERP</a>
+<script>
+(function(){var a=document.getElementById('erpVolverBtn');if(!a)return;var u='';
+try{var m=/[#&]erpback=([^&]+)/.exec(location.hash);if(m){u=decodeURIComponent(m[1]);sessionStorage.setItem('erp_back',u);}else{u=sessionStorage.getItem('erp_back')||'';}}catch(e){}
+if(/^file:\/\//i.test(u))a.href=u;})();
+</script>
+</body>
+</html>
